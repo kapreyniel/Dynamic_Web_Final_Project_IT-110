@@ -1,6 +1,7 @@
 # 🚨 Composer Not Found - Quick Fix Guide
 
 ## The Issue
+
 Composer (PHP package manager) is not installed on your system.
 
 ## ✅ Quick Solution
@@ -12,6 +13,7 @@ Composer (PHP package manager) is not installed on your system.
 1. **Download:** [https://getcomposer.org/Composer-Setup.exe](https://getcomposer.org/Composer-Setup.exe)
 
 2. **Run the installer** and follow these steps:
+
    - Click "Next" through the wizard
    - Let it auto-detect PHP (or point to PHP installation)
    - Check "Add to PATH" (should be checked by default)
@@ -30,6 +32,7 @@ Composer (PHP package manager) is not installed on your system.
 If Composer installer says "PHP not found":
 
 **Option A: XAMPP (Easiest)**
+
 1. Download: [https://www.apachefriends.org/download.html](https://www.apachefriends.org/download.html)
 2. Install XAMPP (includes PHP, MySQL, Apache)
 3. Add to PATH:
@@ -42,6 +45,7 @@ If Composer installer says "PHP not found":
 6. Then install Composer (Step 1 above)
 
 **Option B: PHP Windows Binary**
+
 1. Download: [https://windows.php.net/download/](https://windows.php.net/download/)
 2. Choose "Thread Safe" ZIP for your system
 3. Extract to `C:\php`
@@ -76,6 +80,7 @@ If you want to see the frontend without setting up Laravel:
 ### Create a Simple Mock API
 
 I can create a simplified version that runs on just Node.js/Vite without Laravel. This would:
+
 - ✅ Show all the React components
 - ✅ Display animations and 3D effects
 - ✅ Use mock NASA data
@@ -100,6 +105,7 @@ Would you like me to create this simplified version? (Y/N)
 ## 🆘 Still Having Issues?
 
 ### Check if PHP is installed:
+
 ```powershell
 php --version
 ```
@@ -107,6 +113,7 @@ php --version
 If not found, install PHP first (see Step 2 above).
 
 ### Check if Node.js is installed:
+
 ```powershell
 node --version
 npm --version
@@ -115,6 +122,7 @@ npm --version
 If not found: [Download Node.js](https://nodejs.org/)
 
 ### Verify PATH variables:
+
 ```powershell
 echo $env:PATH
 ```
