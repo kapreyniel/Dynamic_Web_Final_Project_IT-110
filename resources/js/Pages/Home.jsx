@@ -26,17 +26,23 @@ export default function Home() {
       setLoading(true);
 
       // Fetch all NASA data in parallel
+      console.log("Fetching NASA data...");
       const [apodResponse, marsResponse, epicResponse] = await Promise.all([
         axios.get("/api/nasa/apod?count=5"),
         axios.get("/api/nasa/mars-photos?sol=1000"),
         axios.get("/api/nasa/epic"),
       ]);
 
+      console.log("APOD Response:", apodResponse.data);
+      console.log("Mars Response:", marsResponse.data);
+      console.log("EPIC Response:", epicResponse.data);
+
       setApodData(apodResponse.data);
       setMarsPhotos(marsResponse.data);
       setEpicImages(epicResponse.data);
     } catch (error) {
       console.error("Error fetching NASA data:", error);
+      console.error("Error details:", error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
