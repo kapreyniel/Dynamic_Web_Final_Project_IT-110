@@ -22,7 +22,8 @@ class NasaApiService
     public function getAstronomyPictureOfDay($count = 5)
     {
         try {
-            $response = Http::withOptions(['verify' => false])
+            $response = Http::timeout(10)
+                ->withOptions(['verify' => false])
                 ->get("{$this->baseUrl}/planetary/apod", [
                     'api_key' => $this->apiKey,
                     'count' => $count,
@@ -46,7 +47,8 @@ class NasaApiService
     public function getEpicImages()
     {
         try {
-            $response = Http::withOptions(['verify' => false])
+            $response = Http::timeout(10)
+                ->withOptions(['verify' => false])
                 ->get("{$this->baseUrl}/EPIC/api/natural", [
                     'api_key' => $this->apiKey,
                 ]);
@@ -77,7 +79,8 @@ class NasaApiService
     public function getMarsPhotos($sol = 1000)
     {
         try {
-            $response = Http::withOptions(['verify' => false])
+            $response = Http::timeout(10)
+                ->withOptions(['verify' => false])
                 ->get("{$this->baseUrl}/mars-photos/api/v1/rovers/curiosity/photos", [
                     'api_key' => $this->apiKey,
                     'sol' => $sol,
