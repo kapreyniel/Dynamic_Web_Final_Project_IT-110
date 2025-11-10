@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaHeart, FaTimes } from "react-icons/fa";
 import axios from "axios";
 
-export default function GallerySection({ apodData, loading }) {
+export default function GallerySection({ apodData, loading, onFavoriteAdded }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [savingFavorite, setSavingFavorite] = useState(null);
@@ -27,6 +27,10 @@ export default function GallerySection({ apodData, loading }) {
         setFavorites([...favorites, item.date]);
         // Show success notification
         alert("✨ Added to your favorites!");
+        // Trigger favorites section refresh
+        if (onFavoriteAdded) {
+          onFavoriteAdded();
+        }
       }
     } catch (error) {
       console.error("Error saving favorite:", error);
@@ -140,18 +144,26 @@ export default function GallerySection({ apodData, loading }) {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleFavorite(item)}
-                  disabled={isFavorited(item.date) || savingFavorite === item.date}
+                  disabled={
+                    isFavorited(item.date) || savingFavorite === item.date
+                  }
                   className={`flex items-center space-x-2 ${
                     isFavorited(item.date)
                       ? "text-cosmic-pink"
                       : "text-white/50 hover:text-cosmic-pink"
-                  } transition-colors ${savingFavorite === item.date ? 'opacity-50' : ''}`}
+                  } transition-colors ${
+                    savingFavorite === item.date ? "opacity-50" : ""
+                  }`}
                 >
                   <FaHeart
                     className={isFavorited(item.date) ? "fill-current" : ""}
                   />
                   <span className="text-sm">
-                    {savingFavorite === item.date ? "Saving..." : isFavorited(item.date) ? "Favorited" : "Add to Favorites"}
+                    {savingFavorite === item.date
+                      ? "Saving..."
+                      : isFavorited(item.date)
+                      ? "Favorited"
+                      : "Add to Favorites"}
                   </span>
                 </motion.button>
               </div>
