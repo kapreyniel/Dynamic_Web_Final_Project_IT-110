@@ -22,10 +22,11 @@ class NasaApiService
     public function getAstronomyPictureOfDay($count = 5)
     {
         try {
-            $response = Http::get("{$this->baseUrl}/planetary/apod", [
-                'api_key' => $this->apiKey,
-                'count' => $count,
-            ]);
+            $response = Http::withOptions(['verify' => false])
+                ->get("{$this->baseUrl}/planetary/apod", [
+                    'api_key' => $this->apiKey,
+                    'count' => $count,
+                ]);
 
             if ($response->successful()) {
                 return $response->json();
@@ -45,9 +46,10 @@ class NasaApiService
     public function getEpicImages()
     {
         try {
-            $response = Http::get("{$this->baseUrl}/EPIC/api/natural", [
-                'api_key' => $this->apiKey,
-            ]);
+            $response = Http::withOptions(['verify' => false])
+                ->get("{$this->baseUrl}/EPIC/api/natural", [
+                    'api_key' => $this->apiKey,
+                ]);
 
             if ($response->successful()) {
                 $images = $response->json();
@@ -75,10 +77,11 @@ class NasaApiService
     public function getMarsPhotos($sol = 1000)
     {
         try {
-            $response = Http::get("{$this->baseUrl}/mars-photos/api/v1/rovers/curiosity/photos", [
-                'api_key' => $this->apiKey,
-                'sol' => $sol,
-            ]);
+            $response = Http::withOptions(['verify' => false])
+                ->get("{$this->baseUrl}/mars-photos/api/v1/rovers/curiosity/photos", [
+                    'api_key' => $this->apiKey,
+                    'sol' => $sol,
+                ]);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -99,11 +102,12 @@ class NasaApiService
     public function getNearEarthObjects($startDate, $endDate)
     {
         try {
-            $response = Http::get("{$this->baseUrl}/neo/rest/v1/feed", [
-                'api_key' => $this->apiKey,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-            ]);
+            $response = Http::withOptions(['verify' => false])
+                ->get("{$this->baseUrl}/neo/rest/v1/feed", [
+                    'api_key' => $this->apiKey,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ]);
 
             if ($response->successful()) {
                 return $response->json();
