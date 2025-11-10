@@ -50,7 +50,9 @@ export default function GallerySection({ apodData, loading }) {
       <section id="gallery" className="relative py-32">
         <div className="container mx-auto px-6">
           <div className="text-center">
-            <p className="text-white/70">No images available. Please check your NASA API connection.</p>
+            <p className="text-white/70">
+              No images available. Please check your NASA API connection.
+            </p>
           </div>
         </div>
       </section>
