@@ -1,16 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaHeart, FaTimes } from "react-icons/fa";
 import axios from "axios";
 
-export default function GallerySection({ apodData, loading, onFavoriteAdded }) {
+export default function GallerySection({ apodData, loading, onFavoriteAdded, favoriteIds = [], onAddFavorite = () => {} }) {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [favorites, setFavorites] = useState([]);
   const [savingFavorite, setSavingFavorite] = useState(null);
+  const [localFavoritedIds, setLocalFavoritedIds] = useState(favoriteIds || []);
+
+  useEffect(() => {
+    setLocalFavoritedIds(favoriteIds || []);
+  }, [favoriteIds]);
 
   const handleFavorite = async (item) => {
+    // Prevent adding if already favorited (local optimistic list)
+    if (localFavoritedIds.includes(item.date)) {
+      alert("Already in your favorites!");
+      return;
+    }
+
+    // Optimistic update: add to local favorited ids so UI updates instantly
+    setSavingFavorite(item.date);
+    setLocalFavoritedIds((prev) => [...prev, item.date]);
+
     try {
-      setSavingFavorite(item.date);
       const response = await axios.post("/favorites", {
         item_type: "apod",
         item_id: item.date,
@@ -23,24 +36,29 @@ export default function GallerySection({ apodData, loading, onFavoriteAdded }) {
         }),
       });
 
-      if (response.status === 201 || response.status === 200) {
-        setFavorites([...favorites, item.date]);
-        // Show success notification
-        alert("✨ Added to your favorites!");
-        // Trigger favorites section refresh
-        if (onFavoriteAdded) {
-          onFavoriteAdded();
+      // If server returns a favorite object, add it to parent full list
+      if (response.data && response.data.favorite) {
+        // If newly created (201) show a toast
+        if (response.status === 201) {
+          alert("✨ Added to your favorites!");
         }
+        // inform parent to include the full favorite record
+        onAddFavorite(response.data.favorite);
       }
+
+      // Trigger favorites section refresh in parent
+      if (onFavoriteAdded) onFavoriteAdded();
     } catch (error) {
       console.error("Error saving favorite:", error);
+      // rollback optimistic update
+      setLocalFavoritedIds((prev) => prev.filter((id) => id !== item.date));
       alert("Error saving favorite. Please try again.");
     } finally {
       setSavingFavorite(null);
     }
   };
 
-  const isFavorited = (date) => favorites.includes(date);
+  const isFavorited = (date) => localFavoritedIds.includes(date);
 
   if (loading) {
     return (
