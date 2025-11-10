@@ -16,11 +16,25 @@ export default function Home() {
   const [marsPhotos, setMarsPhotos] = useState([]);
   const [epicImages, setEpicImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  // store full favorite records and derived ids
+  const [favoritesFull, setFavoritesFull] = useState([]);
+  const favoriteIds = favoritesFull.map((f) => f.item_id);
   const [favoritesRefresh, setFavoritesRefresh] = useState(0);
 
   useEffect(() => {
     fetchNasaData();
+    fetchFavorites();
   }, []);
+
+  const fetchFavorites = async () => {
+    try {
+      const res = await axios.get("/favorites");
+      // store full favorite objects
+      setFavoritesFull(res.data);
+    } catch (e) {
+      console.error("Error loading favorites:", e);
+    }
+  };
 
   // Function to trigger favorites section refresh
   const refreshFavorites = () => {
@@ -69,6 +83,8 @@ export default function Home() {
         apodData={apodData}
         loading={loading}
         onFavoriteAdded={refreshFavorites}
+        favoriteIds={favoriteIds}
+        onAddFavorite={(fav) => setFavoritesFull((prev) => [fav, ...prev])}
       />
 
       {/* Mars Journey - Red Planet Exploration */}
@@ -78,7 +94,11 @@ export default function Home() {
       <InteractiveEarth epicImages={epicImages} loading={loading} />
 
       {/* Favorites Section - User Engagement */}
-      <FavoritesSection refreshTrigger={favoritesRefresh} />
+      <FavoritesSection
+        refreshTrigger={favoritesRefresh}
+        favoritesFull={favoritesFull}
+        setFavoritesFull={setFavoritesFull}
+      />
 
       {/* Feedback Section - Community Voice */}
       <FeedbackSection />
