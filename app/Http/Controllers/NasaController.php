@@ -23,7 +23,7 @@ class NasaController extends Controller
         $count = $request->query('count', 5);
         $cacheKey = "nasa_apod_{$count}";
 
-        $data = Cache::remember($cacheKey, config('services.nasa.cache_duration'), function () use ($count) {
+        $data = Cache::remember($cacheKey, 3600, function () use ($count) {
             return $this->nasaService->getAstronomyPictureOfDay($count);
         });
 
@@ -37,7 +37,7 @@ class NasaController extends Controller
     {
         $cacheKey = 'nasa_epic_latest';
 
-        $data = Cache::remember($cacheKey, config('services.nasa.cache_duration'), function () {
+        $data = Cache::remember($cacheKey, 3600, function () {
             return $this->nasaService->getEpicImages();
         });
 
@@ -52,7 +52,7 @@ class NasaController extends Controller
         $sol = $request->query('sol', 1000);
         $cacheKey = "nasa_mars_photos_{$sol}";
 
-        $data = Cache::remember($cacheKey, config('services.nasa.cache_duration'), function () use ($sol) {
+        $data = Cache::remember($cacheKey, 3600, function () use ($sol) {
             return $this->nasaService->getMarsPhotos($sol);
         });
 
@@ -68,7 +68,7 @@ class NasaController extends Controller
         $endDate = $request->query('end_date', now()->addDays(7)->format('Y-m-d'));
         $cacheKey = "nasa_neo_{$startDate}_{$endDate}";
 
-        $data = Cache::remember($cacheKey, config('services.nasa.cache_duration'), function () use ($startDate, $endDate) {
+        $data = Cache::remember($cacheKey, 3600, function () use ($startDate, $endDate) {
             return $this->nasaService->getNearEarthObjects($startDate, $endDate);
         });
 
