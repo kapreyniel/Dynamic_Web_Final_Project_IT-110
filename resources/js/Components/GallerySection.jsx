@@ -3,7 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaHeart, FaTimes } from "react-icons/fa";
 import axios from "axios";
 
-export default function GallerySection({ apodData, loading, onFavoriteAdded, favoriteIds = [], onAddFavorite = () => {} }) {
+export default function GallerySection({
+  apodData,
+  loading,
+  onFavoriteAdded,
+  favoriteIds = [],
+  onAddFavorite = () => {},
+}) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [savingFavorite, setSavingFavorite] = useState(null);
   const [localFavoritedIds, setLocalFavoritedIds] = useState(favoriteIds || []);

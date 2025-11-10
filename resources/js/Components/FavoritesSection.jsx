@@ -3,7 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaHeart, FaTrash, FaStar } from "react-icons/fa";
 import axios from "axios";
 
-export default function FavoritesSection({ refreshTrigger, favoritesFull = [], setFavoritesFull = () => {} }) {
+export default function FavoritesSection({
+  refreshTrigger,
+  favoritesFull = [],
+  setFavoritesFull = () => {},
+}) {
   const [loading, setLoading] = useState(true);
 
   // If parent passes favoritesFull we use it; otherwise we could fetch, but parent now provides it
@@ -52,7 +56,7 @@ export default function FavoritesSection({ refreshTrigger, favoritesFull = [], s
           <div className="text-center">
             <div className="inline-block w-16 h-16 border-4 border-cosmic-purple border-t-transparent rounded-full animate-spin" />
           </div>
-  ) : favoritesFull.length === 0 ? (
+        ) : favoritesFull.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
