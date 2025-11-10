@@ -16,10 +16,16 @@ export default function Home() {
   const [marsPhotos, setMarsPhotos] = useState([]);
   const [epicImages, setEpicImages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [favoritesRefresh, setFavoritesRefresh] = useState(0);
 
   useEffect(() => {
     fetchNasaData();
   }, []);
+
+  // Function to trigger favorites section refresh
+  const refreshFavorites = () => {
+    setFavoritesRefresh((prev) => prev + 1);
+  };
 
   const fetchNasaData = async () => {
     try {
@@ -59,7 +65,11 @@ export default function Home() {
       <StoryTimeline apodData={apodData} loading={loading} />
 
       {/* Gallery Section - Visual Showcase */}
-      <GallerySection apodData={apodData} loading={loading} />
+      <GallerySection
+        apodData={apodData}
+        loading={loading}
+        onFavoriteAdded={refreshFavorites}
+      />
 
       {/* Mars Journey - Red Planet Exploration */}
       <MarsJourney marsPhotos={marsPhotos} loading={loading} />
@@ -68,7 +78,7 @@ export default function Home() {
       <InteractiveEarth epicImages={epicImages} loading={loading} />
 
       {/* Favorites Section - User Engagement */}
-      <FavoritesSection />
+      <FavoritesSection refreshTrigger={favoritesRefresh} />
 
       {/* Feedback Section - Community Voice */}
       <FeedbackSection />
