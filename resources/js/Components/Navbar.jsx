@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { FaRocket, FaSignOutAlt, FaUser } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaRocket, FaSignOutAlt, FaUser, FaGoogle } from "react-icons/fa";
 import axios from "axios";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,8 +20,20 @@ export default function Navbar() {
       setUser(JSON.parse(storedUser));
     }
 
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const scrollToSection = (id) => {
@@ -83,23 +97,92 @@ export default function Navbar() {
               </motion.button>
             ))}
 
-            {/* User Info & Sign Out */}
+            {/* User Avatar & Dropdown */}
             {user && (
-              <div className="flex items-center space-x-4 pl-4 border-l border-white/20">
-                <div className="flex items-center space-x-2 text-white/70">
-                  <FaUser className="text-sm" />
-                  <span className="text-sm">{user.name}</span>
-                </div>
+              <div className="relative pl-4 border-l border-white/20" ref={dropdownRef}>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 transition-colors"
-                  title="Sign Out"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex items-center space-x-3 focus:outline-none"
                 >
-                  <FaSignOutAlt />
-                  <span className="text-sm font-medium">Sign Out</span>
+                  {/* Avatar */}
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-10 h-10 rounded-full border-2 border-cosmic-purple shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink flex items-center justify-center border-2 border-cosmic-purple shadow-lg">
+                      <FaUser className="text-white text-lg" />
+                    </div>
+                  )}
+                  
+                  {/* User Name */}
+                  <span className="text-white/90 font-medium hidden lg:block">
+                    {user.name}
+                  </span>
                 </motion.button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {showDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-3 w-64 bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                    >
+                      {/* User Info Section */}
+                      <div className="p-4 border-b border-white/10">
+                        <div className="flex items-center space-x-3 mb-2">
+                          {user.avatar ? (
+                            <img
+                              src={user.avatar}
+                              alt={user.name}
+                              className="w-12 h-12 rounded-full border-2 border-cosmic-purple"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink flex items-center justify-center">
+                              <FaUser className="text-white text-xl" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-semibold truncate">
+                              {user.name}
+                            </p>
+                            <p className="text-white/60 text-sm truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Google Badge */}
+                        {user.google_id && (
+                          <div className="flex items-center space-x-2 mt-2 px-3 py-1.5 bg-white/5 rounded-lg">
+                            <FaGoogle className="text-red-400 text-sm" />
+                            <span className="text-white/70 text-xs">
+                              Connected with Google
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Sign Out Button */}
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full px-4 py-3 flex items-center space-x-3 hover:bg-red-500/10 transition-colors group"
+                      >
+                        <FaSignOutAlt className="text-red-400 group-hover:text-red-300 transition-colors" />
+                        <span className="text-red-400 group-hover:text-red-300 font-medium transition-colors">
+                          Sign Out
+                        </span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 
