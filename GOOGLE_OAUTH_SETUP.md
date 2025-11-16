@@ -15,8 +15,9 @@
 2. Click "Create Credentials" > "OAuth client ID"
 3. Select "Web application"
 4. Configure:
+
    - **Name**: Beyond Earth App
-   - **Authorized JavaScript origins**: 
+   - **Authorized JavaScript origins**:
      - `http://localhost:8000`
      - `http://127.0.0.1:8000`
    - **Authorized redirect URIs**:
@@ -61,6 +62,7 @@ php artisan cache:clear
 ## Database Changes
 
 New columns added to `users` table:
+
 - `google_id` - Stores Google user ID
 - `avatar` - Stores user profile picture URL
 - `password` - Made nullable for Google-only accounts
