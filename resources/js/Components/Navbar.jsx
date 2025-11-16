@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaRocket } from 'react-icons/fa';
+import { FaRocket, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import axios from 'axios';
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
         };
+
+        // Check if user is logged in
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
@@ -18,6 +26,26 @@ export default function Navbar() {
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    const handleSignOut = async () => {
+        try {
+            // Call logout API
+            await axios.post('/logout');
+            
+            // Clear localStorage
+            localStorage.removeItem('user');
+            localStorage.removeItem('authenticated');
+            
+            // Reload page to show auth screen
+            window.location.reload();
+        } catch (error) {
+            console.error('Sign out error:', error);
+            // Clear localStorage anyway
+            localStorage.removeItem('user');
+            localStorage.removeItem('authenticated');
+            window.location.reload();
         }
     };
 
@@ -56,6 +84,35 @@ export default function Navbar() {
                                 {item}
                             </motion.button>
                         ))}
+                        
+                        {/* User Info & Sign Out */}
+                        {user && !user.isGuest && (
+                            <div className="flex items-center space-x-4 pl-4 border-l border-white/20">
+                                <div className="flex items-center space-x-2 text-white/70">
+                                    <FaUser className="text-sm" />
+                                    <span className="text-sm">{user.name}</span>
+                                </div>
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={handleSignOut}
+                                    className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 transition-colors"
+                                    title="Sign Out"
+                                >
+                                    <FaSignOutAlt />
+                                    <span className="text-sm font-medium">Sign Out</span>
+                                </motion.button>
+                            </div>
+                        )}
+                        
+                        {/* Guest Badge */}
+                        {user && user.isGuest && (
+                            <div className="flex items-center space-x-2 pl-4 border-l border-white/20 text-cyan-300/70">
+                                <FaUser className="text-sm" />
+                                <span className="text-sm">Guest Mode</span>
+                            </div>
+                        )}
+                        
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
