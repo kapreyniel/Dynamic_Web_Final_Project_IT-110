@@ -115,14 +115,13 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
         style={{
           right: phase === "landing" ? "50%" : "10%",
           top: phase === "landing" ? "50%" : "20%",
+          transform: phase === "landing" ? "translate(50%, -50%)" : "translate(0, 0)",
         }}
         initial={{ scale: 0.3, opacity: 0.6 }}
         animate={{
           scale: phase === "landing" ? 3 : phase === "approach" ? 1.2 : 0.5,
           opacity: phase === "landing" ? 0.9 : 0.8,
           rotate: [0, 360],
-          x: phase === "landing" ? "-50%" : 0,
-          y: phase === "landing" ? "-50%" : 0,
         }}
         transition={{
           scale: { duration: 1.5, ease: "easeInOut" },
@@ -177,13 +176,14 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
       {/* Spacecraft */}
       <motion.div
         className="absolute left-10 top-1/2 -translate-y-1/2 z-30"
-        animate={{
+        style={{
           x: `${spacecraftPosition * 8}vw`,
+        }}
+        animate={{
           y: phase === "landing" ? [0, -20, 0, -10, 0] : 0,
           rotate: phase === "landing" ? [0, -5, 5, -2, 0] : 0,
         }}
         transition={{
-          x: { duration: 0.8, ease: "easeInOut" },
           y: phase === "landing" ? { duration: 2, ease: "easeInOut" } : {},
           rotate: phase === "landing" ? { duration: 2, ease: "easeInOut" } : {},
         }}
