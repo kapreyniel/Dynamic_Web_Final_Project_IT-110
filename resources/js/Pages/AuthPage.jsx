@@ -60,9 +60,9 @@ export default function AuthPage({ onAuthSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-space-dark via-black to-space-dark overflow-hidden">
+    <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-black to-purple-900 overflow-hidden">
       {/* Animated background stars */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 z-0">
         {[...Array(150)].map((_, i) => (
           <motion.div
             key={i}
@@ -86,28 +86,28 @@ export default function AuthPage({ onAuthSuccess }) {
 
       {/* Animated Planet Background */}
       <motion.div
-        className="absolute right-0 top-0 w-[600px] h-[600px] -translate-y-1/4 translate-x-1/4"
+        className="absolute right-0 top-0 w-[600px] h-[600px] -translate-y-1/4 translate-x-1/4 z-10"
         initial={{ scale: 3, opacity: 0 }}
-        animate={{ 
-          scale: 1, 
-          opacity: 0.4,
+        animate={{
+          scale: 1,
+          opacity: 0.5,
           rotate: 360,
         }}
         transition={{
           scale: { duration: 1.5, ease: "easeOut" },
           opacity: { duration: 1.2 },
-          rotate: { duration: 100, repeat: Infinity, ease: "linear" }
+          rotate: { duration: 100, repeat: Infinity, ease: "linear" },
         }}
       >
         <div className="relative w-full h-full">
           {/* Planet Core Glow */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 blur-3xl opacity-60" />
-          
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-400 via-purple-500 to-pink-500 blur-3xl opacity-80" />
+
           {/* Planet Surface */}
-          <div className="absolute inset-12 rounded-full bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-700 overflow-hidden">
+          <div className="absolute inset-12 rounded-full bg-gradient-to-br from-orange-400 via-red-500 to-purple-700 overflow-hidden shadow-2xl">
             {/* Atmosphere Glow */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-300/40 via-transparent to-transparent" />
-            
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-300/50 via-transparent to-transparent" />
+
             {/* Surface Details */}
             <motion.div
               className="absolute inset-0"
@@ -117,7 +117,7 @@ export default function AuthPage({ onAuthSuccess }) {
               {[...Array(12)].map((_, i) => (
                 <div
                   key={i}
-                  className="absolute rounded-full bg-blue-900/30"
+                  className="absolute rounded-full bg-red-900/50"
                   style={{
                     width: `${Math.random() * 40 + 15}%`,
                     height: `${Math.random() * 40 + 15}%`,
@@ -150,7 +150,13 @@ export default function AuthPage({ onAuthSuccess }) {
           </div>
 
           {/* Planetary Rings */}
-          <div className="absolute inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ transform: "translateX(-50%) translateY(-50%) rotateX(75deg)", transformStyle: "preserve-3d" }}>
+          <div
+            className="absolute inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{
+              transform: "translateX(-50%) translateY(-50%) rotateX(75deg)",
+              transformStyle: "preserve-3d",
+            }}
+          >
             <div className="w-full h-full rounded-full border-8 border-purple-400/30 blur-sm" />
             <div className="absolute inset-8 rounded-full border-6 border-pink-400/20 blur-sm" />
           </div>
@@ -159,7 +165,7 @@ export default function AuthPage({ onAuthSuccess }) {
 
       {/* Smaller orbiting moon/asteroid */}
       <motion.div
-        className="absolute w-32 h-32 rounded-full bg-gradient-to-br from-gray-300 via-gray-500 to-gray-700 opacity-30"
+        className="absolute w-32 h-32 rounded-full bg-gradient-to-br from-gray-300 via-gray-500 to-gray-700 opacity-40 z-10"
         style={{
           right: "15%",
           top: "25%",
@@ -178,7 +184,7 @@ export default function AuthPage({ onAuthSuccess }) {
         <div className="absolute inset-2 rounded-full bg-gradient-to-br from-gray-400 to-gray-800" />
       </motion.div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
+      <div className="relative z-20 min-h-screen flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}

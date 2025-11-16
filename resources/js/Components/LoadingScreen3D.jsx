@@ -4,7 +4,9 @@ import Spline from "@splinetool/react-spline";
 
 export default function LoadingScreen3D({ onLoadingComplete }) {
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState("Initializing spacecraft systems...");
+  const [loadingText, setLoadingText] = useState(
+    "Initializing spacecraft systems..."
+  );
   const [splineLoaded, setSplineLoaded] = useState(false);
   const [phase, setPhase] = useState("travel"); // travel, approach, landing
   const [spacecraftPosition, setSpacecraftPosition] = useState(0);
@@ -12,16 +14,41 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
   useEffect(() => {
     // Spacecraft travel animation - 5 seconds total journey
     const loadingSteps = [
-      { progress: 20, text: "Initializing spacecraft systems...", phase: "travel", time: 800 },
-      { progress: 40, text: "Accelerating through asteroid field...", phase: "travel", time: 1000 },
-      { progress: 60, text: "Approaching destination planet...", phase: "approach", time: 1000 },
-      { progress: 80, text: "Entering planetary orbit...", phase: "approach", time: 1000 },
-      { progress: 95, text: "Preparing for landing sequence...", phase: "landing", time: 800 },
+      {
+        progress: 20,
+        text: "Initializing spacecraft systems...",
+        phase: "travel",
+        time: 800,
+      },
+      {
+        progress: 40,
+        text: "Accelerating through asteroid field...",
+        phase: "travel",
+        time: 1000,
+      },
+      {
+        progress: 60,
+        text: "Approaching destination planet...",
+        phase: "approach",
+        time: 1000,
+      },
+      {
+        progress: 80,
+        text: "Entering planetary orbit...",
+        phase: "approach",
+        time: 1000,
+      },
+      {
+        progress: 95,
+        text: "Preparing for landing sequence...",
+        phase: "landing",
+        time: 800,
+      },
       { progress: 100, text: "Landing complete!", phase: "landing", time: 400 },
     ];
 
     let currentStep = 0;
-    
+
     const runStep = () => {
       if (currentStep < loadingSteps.length) {
         const step = loadingSteps[currentStep];
@@ -46,9 +73,9 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden">
       {/* Animated Starfield Background */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 z-10">
         {[...Array(200)].map((_, i) => (
           <motion.div
             key={i}
@@ -71,8 +98,8 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
         ))}
       </div>
 
-      {/* Spline 3D Scene */}
-      <div className="absolute inset-0 opacity-40">
+      {/* Spline 3D Scene - Subtle Background */}
+      <div className="absolute inset-0 z-0 opacity-15">
         <Suspense fallback={null}>
           <Spline
             scene="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"
@@ -84,7 +111,7 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
 
       {/* Destination Planet */}
       <motion.div
-        className="absolute"
+        className="absolute z-20"
         style={{
           right: phase === "landing" ? "50%" : "10%",
           top: phase === "landing" ? "50%" : "20%",
@@ -92,7 +119,7 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
         initial={{ scale: 0.3, opacity: 0.6 }}
         animate={{
           scale: phase === "landing" ? 3 : phase === "approach" ? 1.2 : 0.5,
-          opacity: phase === "landing" ? 0.8 : 0.7,
+          opacity: phase === "landing" ? 0.9 : 0.8,
           rotate: [0, 360],
           x: phase === "landing" ? "-50%" : 0,
           y: phase === "landing" ? "-50%" : 0,
@@ -104,15 +131,15 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
         }}
       >
         <div className="relative w-64 h-64">
-          {/* Planet Core */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 blur-2xl opacity-80" />
-          
+          {/* Planet Core Glow */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 blur-3xl opacity-90" />
+
           {/* Planet Surface */}
-          <div className="absolute inset-4 rounded-full bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-700 overflow-hidden">
+          <div className="absolute inset-4 rounded-full bg-gradient-to-br from-orange-400 via-red-500 to-purple-700 overflow-hidden shadow-2xl">
             {/* Atmosphere Glow */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-300/40 via-transparent to-transparent" />
-            
-            {/* Surface Details */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-300/50 via-transparent to-transparent" />
+
+            {/* Surface Details - Craters and Land */}
             <motion.div
               className="absolute inset-0"
               animate={{ rotate: 360 }}
@@ -121,7 +148,7 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
               {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
-                  className="absolute rounded-full bg-blue-900/40"
+                  className="absolute rounded-full bg-red-900/60"
                   style={{
                     width: `${Math.random() * 30 + 10}%`,
                     height: `${Math.random() * 30 + 10}%`,
@@ -136,18 +163,20 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
           {/* Rings */}
           <motion.div
             className="absolute inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            animate={{ rotateX: 75 }}
-            style={{ transformStyle: "preserve-3d" }}
+            style={{ 
+              transform: "translateX(-50%) translateY(-50%) rotateX(75deg)",
+              transformStyle: "preserve-3d" 
+            }}
           >
-            <div className="w-80 h-80 rounded-full border-8 border-purple-400/40" />
-            <div className="absolute inset-4 rounded-full border-6 border-pink-400/30" />
+            <div className="w-80 h-80 rounded-full border-8 border-purple-400/50 shadow-lg" />
+            <div className="absolute inset-4 rounded-full border-6 border-pink-400/40" />
           </motion.div>
         </div>
       </motion.div>
 
       {/* Spacecraft */}
       <motion.div
-        className="absolute left-10 top-1/2 -translate-y-1/2"
+        className="absolute left-10 top-1/2 -translate-y-1/2 z-30"
         animate={{
           x: `${spacecraftPosition * 8}vw`,
           y: phase === "landing" ? [0, -20, 0, -10, 0] : 0,
@@ -161,7 +190,12 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
       >
         <div className="relative">
           {/* Spacecraft Body */}
-          <svg width="120" height="60" viewBox="0 0 120 60" className="drop-shadow-2xl">
+          <svg
+            width="120"
+            height="60"
+            viewBox="0 0 120 60"
+            className="drop-shadow-2xl"
+          >
             {/* Main Hull */}
             <path
               d="M 20 30 L 100 15 L 110 30 L 100 45 L 20 30 Z"
@@ -170,23 +204,46 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
               strokeWidth="2"
             />
             {/* Cockpit */}
-            <ellipse cx="90" cy="30" rx="15" ry="12" fill="#1e40af" opacity="0.7" />
-            <ellipse cx="90" cy="30" rx="10" ry="8" fill="#3b82f6" opacity="0.5" />
-            
+            <ellipse
+              cx="90"
+              cy="30"
+              rx="15"
+              ry="12"
+              fill="#1e40af"
+              opacity="0.7"
+            />
+            <ellipse
+              cx="90"
+              cy="30"
+              rx="10"
+              ry="8"
+              fill="#3b82f6"
+              opacity="0.5"
+            />
+
             {/* Wings */}
             <path d="M 40 30 L 35 15 L 50 28 Z" fill="#4f46e5" opacity="0.8" />
             <path d="M 40 30 L 35 45 L 50 32 Z" fill="#4f46e5" opacity="0.8" />
-            
+
             {/* Engine Glow */}
             <motion.ellipse
-              cx="22" cy="30" rx="8" ry="6"
+              cx="22"
+              cy="30"
+              rx="8"
+              ry="6"
               fill="#ec4899"
               animate={{ opacity: [0.5, 1, 0.5], rx: [8, 12, 8] }}
               transition={{ duration: 0.5, repeat: Infinity }}
             />
-            
+
             <defs>
-              <linearGradient id="spacecraft-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient
+                id="spacecraft-gradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
                 <stop offset="0%" stopColor="#6366f1" />
                 <stop offset="50%" stopColor="#8b5cf6" />
                 <stop offset="100%" stopColor="#06b6d4" />
@@ -262,7 +319,7 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
       </AnimatePresence>
 
       {/* Loading UI Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-end pb-20 pointer-events-none">
+      <div className="absolute inset-0 flex flex-col items-center justify-end pb-20 pointer-events-none z-40">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -273,17 +330,17 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
             className="mb-6"
             animate={{
               textShadow: [
-                "0 0 20px rgba(236, 72, 153, 0.5)",
-                "0 0 40px rgba(79, 70, 229, 0.8)",
-                "0 0 20px rgba(236, 72, 153, 0.5)",
+                "0 0 20px rgba(236, 72, 153, 0.8)",
+                "0 0 40px rgba(79, 70, 229, 1)",
+                "0 0 20px rgba(236, 72, 153, 0.8)",
               ],
             }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <h1 className="text-5xl md:text-6xl font-display font-bold gradient-text mb-2">
+            <h1 className="text-5xl md:text-6xl font-display font-bold gradient-text mb-2 drop-shadow-lg">
               MISSION CONTROL
             </h1>
-            <p className="text-cyan-300/70 text-sm tracking-widest uppercase">
+            <p className="text-cyan-300 text-sm tracking-widest uppercase font-bold">
               Beyond Earth Journey
             </p>
           </motion.div>
@@ -291,7 +348,7 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
           {/* HUD Style Progress */}
           <div className="relative mb-6">
             {/* Progress Bar Container */}
-            <div className="relative bg-black/40 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-6">
+            <div className="relative bg-black/70 backdrop-blur-md border-2 border-cyan-400/50 rounded-lg p-6 shadow-2xl">
               {/* Corner Accents */}
               <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400" />
               <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400" />
@@ -314,7 +371,8 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
                 <motion.div
                   className="h-full relative"
                   style={{
-                    background: "linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899)",
+                    background:
+                      "linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899)",
                   }}
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
@@ -324,14 +382,20 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent"
                     animate={{ x: ["-100%", "200%"] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                 </motion.div>
               </div>
 
               {/* Progress Percentage */}
               <div className="flex justify-between items-center mt-3">
-                <span className="text-cyan-400 font-mono text-sm">PROGRESS</span>
+                <span className="text-cyan-400 font-mono text-sm">
+                  PROGRESS
+                </span>
                 <motion.span
                   className="text-2xl font-bold font-mono"
                   style={{
@@ -360,7 +424,13 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
                 }`}
                 animate={
                   progress >= (idx + 1) * 25
-                    ? { boxShadow: ["0 0 10px rgba(74, 222, 128, 0.5)", "0 0 20px rgba(74, 222, 128, 0.8)", "0 0 10px rgba(74, 222, 128, 0.5)"] }
+                    ? {
+                        boxShadow: [
+                          "0 0 10px rgba(74, 222, 128, 0.5)",
+                          "0 0 20px rgba(74, 222, 128, 0.8)",
+                          "0 0 10px rgba(74, 222, 128, 0.5)",
+                        ],
+                      }
                     : {}
                 }
                 transition={{ duration: 1, repeat: Infinity }}
