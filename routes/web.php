@@ -22,6 +22,10 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
+// Google OAuth Routes
+Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
 // NASA API Routes
 Route::prefix('api')->group(function () {
     Route::get('/nasa/apod', [NasaController::class, 'getAstronomyPictureOfDay']);

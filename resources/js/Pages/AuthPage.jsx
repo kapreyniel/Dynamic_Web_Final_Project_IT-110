@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUser, FaLock, FaEnvelope, FaRocket } from "react-icons/fa";
+import { FaUser, FaLock, FaEnvelope, FaRocket, FaGoogle } from "react-icons/fa";
 import axios from "axios";
 
 export default function AuthPage({ onAuthSuccess }) {
@@ -57,6 +57,10 @@ export default function AuthPage({ onAuthSuccess }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = "/auth/google";
   };
 
   return (
@@ -334,6 +338,30 @@ export default function AuthPage({ onAuthSuccess }) {
                   : "Join Expedition"}
               </motion.button>
             </form>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-transparent text-white/50">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            {/* Google Sign In Button */}
+            <motion.button
+              type="button"
+              onClick={handleGoogleLogin}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-3"
+            >
+              <FaGoogle className="text-xl" />
+              <span>Sign in with Google</span>
+            </motion.button>
           </motion.div>
 
           {/* Footer */}
