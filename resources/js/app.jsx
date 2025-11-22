@@ -18,17 +18,30 @@ function AppWrapper({ App, props }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Check if user is already authenticated
-    const storedAuth = localStorage.getItem("authenticated");
-    const storedUser = localStorage.getItem("user");
+    // Check if user is authenticated from server (via Inertia props)
+    const serverUser = props?.initialPage?.props?.auth?.user;
 
-    if (storedAuth === "true" && storedUser) {
-      setUser(JSON.parse(storedUser));
+    if (serverUser) {
+      setUser(serverUser);
       setIsAuthenticated(true);
       setShowLoading(true);
       setShowAuth(false);
+      // Store in localStorage for client-side consistency
+      localStorage.setItem("user", JSON.stringify(serverUser));
+      localStorage.setItem("authenticated", "true");
+    } else {
+      // Check localStorage as fallback
+      const storedAuth = localStorage.getItem("authenticated");
+      const storedUser = localStorage.getItem("user");
+
+      if (storedAuth === "true" && storedUser) {
+        setUser(JSON.parse(storedUser));
+        setIsAuthenticated(true);
+        setShowLoading(true);
+        setShowAuth(false);
+      }
     }
-  }, []);
+  }, [props]);
 
   const handleLoadingComplete = () => {
     setShowLoading(false);

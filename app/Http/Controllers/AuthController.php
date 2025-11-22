@@ -120,10 +120,8 @@ class AuthController extends Controller
             $request = request();
             $request->session()->regenerate();
 
-            // Return HTML that will set localStorage and redirect
-            return view('auth.google-callback', [
-                'user' => $user,
-            ]);
+            // Redirect to home page
+            return redirect('/');
 
         } catch (\Exception $e) {
             return redirect('/')->with('error', 'Google authentication failed: ' . $e->getMessage());

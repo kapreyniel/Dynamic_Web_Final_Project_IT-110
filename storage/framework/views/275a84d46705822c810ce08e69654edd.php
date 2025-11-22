@@ -50,12 +50,6 @@
     </div>
 
     <script>
-        // Store user data in localStorage
-        const userData = <?php echo json_encode($user, 15, 512) ?>;
-        
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('authenticated', 'true');
-        
         // Redirect to home page
         window.location.href = '/';
     </script>

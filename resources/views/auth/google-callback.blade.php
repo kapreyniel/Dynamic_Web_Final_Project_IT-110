@@ -50,25 +50,8 @@
     </div>
 
     <script>
-        // Store user data in localStorage
-        const userData = @json($user);
-        
-        // Store only the necessary user data
-        const userInfo = {
-            id: userData.id,
-            name: userData.name,
-            email: userData.email,
-            avatar: userData.avatar || null,
-            google_id: userData.google_id || null
-        };
-        
-        localStorage.setItem('user', JSON.stringify(userInfo));
-        localStorage.setItem('authenticated', 'true');
-        
-        // Small delay to ensure localStorage is saved
-        setTimeout(() => {
-            window.location.href = '/';
-        }, 100);
+        // Redirect to home page
+        window.location.href = '/';
     </script>
 </body>
 </html>
