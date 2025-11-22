@@ -87,40 +87,6 @@ export default function InteractiveEarth({ epicImages, loading }) {
             ))}
           </motion.div>
         </div>
-
-        {/* EPIC Images Gallery */}
-        {!loading && epicImages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="mt-20"
-          >
-            <h3 className="text-3xl font-bold text-center mb-12">
-              Earth from a Million Miles Away
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {epicImages.slice(0, 5).map((image, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                  className="aspect-square overflow-hidden rounded-lg glass-card p-2"
-                >
-                  <img
-                    src={image.image_url}
-                    alt={`Earth - ${image.date}`}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
       </div>
     </section>
   );
