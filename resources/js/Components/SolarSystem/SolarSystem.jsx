@@ -15,11 +15,11 @@ export default function SolarSystem() {
   const planetObjectsRef = useRef({});
   const moonsRef = useRef([]);
   const animationIdRef = useRef(null);
-  
+
   const [currentExhibit, setCurrentExhibit] = useState(0);
   const [loading, setLoading] = useState(true);
   const [exhibitInfo, setExhibitInfo] = useState(null);
-  
+
   const exhibits = [
     { name: "Sun", progress: 0 },
     { name: "Mercury", progress: 11 },
@@ -53,7 +53,10 @@ export default function SolarSystem() {
 
     // Setup renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    renderer.setSize(
+      containerRef.current.clientWidth,
+      containerRef.current.clientHeight
+    );
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -88,14 +91,14 @@ export default function SolarSystem() {
     // Animation loop
     const animate = () => {
       animationIdRef.current = requestAnimationFrame(animate);
-      
+
       const time = Date.now() * 0.001;
-      
+
       // Animate planets
       planetsRef.current.forEach((planet) => {
         if (planet.userData.planet !== "sun") {
           planet.rotation.y += planet.userData.rotationSpeed;
-          
+
           if (planet.userData.orbitRadius && planet.userData.orbitSpeed) {
             const angle = time * planet.userData.orbitSpeed;
             planet.position.x = Math.cos(angle) * planet.userData.orbitRadius;
@@ -119,14 +122,17 @@ export default function SolarSystem() {
     };
 
     animate();
-    setLoading(false);
 
     // Handle resize
     const handleResize = () => {
       if (!containerRef.current) return;
-      camera.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
+      camera.aspect =
+        containerRef.current.clientWidth / containerRef.current.clientHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+      renderer.setSize(
+        containerRef.current.clientWidth,
+        containerRef.current.clientHeight
+      );
     };
 
     window.addEventListener("resize", handleResize);
@@ -156,7 +162,10 @@ export default function SolarSystem() {
     }
 
     const starGeometry = new THREE.BufferGeometry();
-    starGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    starGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positions, 3)
+    );
     starGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
     const starMaterial = new THREE.PointsMaterial({
@@ -180,7 +189,11 @@ export default function SolarSystem() {
     });
 
     orbits.forEach((radius) => {
-      const orbitGeometry = new THREE.RingGeometry(radius - 0.1, radius + 0.1, 128);
+      const orbitGeometry = new THREE.RingGeometry(
+        radius - 0.1,
+        radius + 0.1,
+        128
+      );
       const orbit = new THREE.Mesh(orbitGeometry, orbitalMaterial);
       orbit.rotation.x = -Math.PI / 2;
       scene.add(orbit);
@@ -188,78 +201,173 @@ export default function SolarSystem() {
   };
 
   const createPlanets = (scene) => {
+    const loader = new GLTFLoader();
+    let loadedCount = 0;
+    const totalPlanets = Object.keys(planetData).length;
+
     Object.keys(planetData).forEach((key) => {
       const data = planetData[key];
-      const geometry = new THREE.SphereGeometry(data.radius, 32, 32);
-      
-      let material;
+
+      // For Sun, create glowing sphere
       if (key === "sun") {
-        material = new THREE.MeshBasicMaterial({
+        const geometry = new THREE.SphereGeometry(data.radius, 32, 32);
+        const material = new THREE.MeshBasicMaterial({
           color: data.color,
           emissive: data.emissive || data.color,
           emissiveIntensity: 0.8,
         });
-      } else {
-        material = new THREE.MeshStandardMaterial({
-          color: data.color,
-          roughness: 0.7,
-          metalness: 0.3,
-        });
-      }
-
-      const planet = new THREE.Mesh(geometry, material);
-      
-      if (key === "sun") {
+        const planet = new THREE.Mesh(geometry, material);
         planet.position.set(0, 0, 0);
-      } else {
-        planet.position.set(data.orbitRadius, 0, 0);
-      }
-
-      planet.userData = {
-        planet: key,
-        type: key === "sun" ? "star" : "planet",
-        orbitRadius: data.orbitRadius,
-        orbitSpeed: data.orbitSpeed,
-        rotationSpeed: 0.02,
-      };
-
-      scene.add(planet);
-      planetsRef.current.push(planet);
-      planetObjectsRef.current[key] = planet;
-
-      // Add moon to Earth
-      if (data.hasMoon) {
-        const moonGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-        const moonMaterial = new THREE.MeshStandardMaterial({
-          color: 0xcccccc,
-          roughness: 0.8,
-        });
-        const moon = new THREE.Mesh(moonGeometry, moonMaterial);
-        moon.position.set(2, 0, 0);
-        moon.userData = {
-          type: "moon",
-          orbitRadius: 2,
-          orbitSpeed: 0.05,
-          rotationSpeed: 0.01,
+        planet.userData = {
+          planet: key,
+          type: "star",
+          rotationSpeed: 0.005,
         };
-        planet.add(moon);
-        moonsRef.current.push({ moon, planet });
+        
+        // Add solar corona
+        const coronaGeometry = new THREE.SphereGeometry(data.radius * 1.1, 32, 32);
+        const coronaMaterial = new THREE.MeshBasicMaterial({
+          color: 0xff4500,
+          transparent: true,
+          opacity: 0.3,
+          side: THREE.BackSide,
+        });
+        const corona = new THREE.Mesh(coronaGeometry, coronaMaterial);
+        planet.add(corona);
+
+        scene.add(planet);
+        planetsRef.current.push(planet);
+        planetObjectsRef.current[key] = planet;
+        loadedCount++;
+        return;
       }
 
-      // Add rings to Saturn
-      if (data.hasRings) {
-        const ringGeometry = new THREE.RingGeometry(3.5, 5.0, 64);
-        const ringMaterial = new THREE.MeshBasicMaterial({
-          color: 0xffffff,
-          side: THREE.DoubleSide,
-          transparent: true,
-          opacity: 0.7,
-        });
-        const rings = new THREE.Mesh(ringGeometry, ringMaterial);
-        rings.rotation.x = -Math.PI / 2;
-        planet.add(rings);
+      // Try to load GLB model for other planets
+      if (data.modelPath) {
+        loader.load(
+          data.modelPath,
+          (gltf) => {
+            const model = gltf.scene;
+            model.scale.set(data.scale, data.scale, data.scale);
+            model.position.set(data.orbitRadius, 0, 0);
+
+            // Enable shadows
+            model.traverse((child) => {
+              if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+              }
+            });
+
+            model.userData = {
+              planet: key,
+              type: "planet",
+              orbitRadius: data.orbitRadius,
+              orbitSpeed: data.orbitSpeed,
+              rotationSpeed: 0.01,
+              isGLBModel: true,
+            };
+
+            scene.add(model);
+            planetsRef.current.push(model);
+            planetObjectsRef.current[key] = model;
+
+            // Add special features
+            addPlanetFeatures(key, model, data);
+
+            loadedCount++;
+            if (loadedCount === totalPlanets) {
+              setLoading(false);
+            }
+          },
+          (progress) => {
+            // Loading progress
+            const percent = (progress.loaded / progress.total) * 100;
+            console.log(`Loading ${key}: ${percent.toFixed(0)}%`);
+          },
+          (error) => {
+            console.error(`Error loading ${key} model:`, error);
+            // Fallback to geometric sphere
+            createFallbackPlanet(key, data, scene);
+            loadedCount++;
+            if (loadedCount === totalPlanets) {
+              setLoading(false);
+            }
+          }
+        );
+      } else {
+        // No model path, use geometric sphere
+        createFallbackPlanet(key, data, scene);
+        loadedCount++;
       }
     });
+
+    // Set loading to false after a timeout if models don't load
+    setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+      }
+    }, 5000);
+  };
+
+  const createFallbackPlanet = (key, data, scene) => {
+    const geometry = new THREE.SphereGeometry(data.radius, 32, 32);
+    const material = new THREE.MeshStandardMaterial({
+      color: data.color,
+      roughness: 0.7,
+      metalness: 0.3,
+    });
+    const planet = new THREE.Mesh(geometry, material);
+    planet.position.set(data.orbitRadius, 0, 0);
+    planet.userData = {
+      planet: key,
+      type: "planet",
+      orbitRadius: data.orbitRadius,
+      orbitSpeed: data.orbitSpeed,
+      rotationSpeed: 0.02,
+      isGLBModel: false,
+    };
+
+    scene.add(planet);
+    planetsRef.current.push(planet);
+    planetObjectsRef.current[key] = planet;
+
+    addPlanetFeatures(key, planet, data);
+  };
+
+  const addPlanetFeatures = (key, planet, data) => {
+    // Add moon to Earth
+    if (data.hasMoon) {
+      const moonGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+      const moonMaterial = new THREE.MeshStandardMaterial({
+        color: 0xcccccc,
+        roughness: 0.8,
+      });
+      const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+      moon.position.set(2, 0, 0);
+      moon.userData = {
+        type: "moon",
+        orbitRadius: 2,
+        orbitSpeed: 0.05,
+        rotationSpeed: 0.01,
+      };
+      planet.add(moon);
+      moonsRef.current.push({ moon, planet });
+    }
+
+    // Add rings to Saturn (only for fallback geometric model)
+    if (data.hasRings && !planet.userData.isGLBModel) {
+      const ringGeometry = new THREE.RingGeometry(3.5, 5.0, 64);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.7,
+      });
+      const rings = new THREE.Mesh(ringGeometry, ringMaterial);
+      rings.rotation.x = -Math.PI / 2;
+      planet.add(rings);
+    }
   };
 
   const moveToPlanet = (planetName) => {
@@ -279,7 +387,7 @@ export default function SolarSystem() {
     );
 
     animateCameraTo(cameraPosition, planetPosition);
-    
+
     setExhibitInfo({
       title: data.name,
       description: data.description,
@@ -295,12 +403,21 @@ export default function SolarSystem() {
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const easeProgress = progress < 0.5
-        ? 2 * progress * progress
-        : -1 + (4 - 2 * progress) * progress;
+      const easeProgress =
+        progress < 0.5
+          ? 2 * progress * progress
+          : -1 + (4 - 2 * progress) * progress;
 
-      cameraRef.current.position.lerpVectors(startPosition, targetPosition, easeProgress);
-      controlsRef.current.target.lerpVectors(startTarget, targetLookAt, easeProgress);
+      cameraRef.current.position.lerpVectors(
+        startPosition,
+        targetPosition,
+        easeProgress
+      );
+      controlsRef.current.target.lerpVectors(
+        startTarget,
+        targetLookAt,
+        easeProgress
+      );
 
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -335,7 +452,7 @@ export default function SolarSystem() {
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full" />
-      
+
       {!loading && (
         <SolarSystemUI
           currentExhibit={exhibits[currentExhibit]}
@@ -347,13 +464,16 @@ export default function SolarSystem() {
           canGoNext={currentExhibit < exhibits.length - 1}
         />
       )}
-      
+
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/80">
           <div className="text-white text-center">
             <div className="text-xl mb-2">Loading Solar System...</div>
             <div className="w-64 h-2 bg-white/20 rounded-full overflow-hidden">
-              <div className="h-full bg-cosmic-purple animate-pulse" style={{ width: "70%" }} />
+              <div
+                className="h-full bg-cosmic-purple animate-pulse"
+                style={{ width: "70%" }}
+              />
             </div>
           </div>
         </div>
