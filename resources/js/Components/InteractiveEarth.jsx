@@ -34,7 +34,7 @@ export default function InteractiveEarth({ epicImages, loading }) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="glass-card h-[500px] overflow-hidden"
+            className="glass-card h-[600px] overflow-hidden"
           >
             <Suspense
               fallback={
