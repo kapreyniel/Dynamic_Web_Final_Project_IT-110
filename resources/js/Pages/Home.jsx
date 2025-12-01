@@ -10,6 +10,7 @@ import InteractiveEarth from "../Components/InteractiveEarth";
 import FavoritesSection from "../Components/FavoritesSection";
 import FeedbackSection from "../Components/FeedbackSection";
 import CallToAction from "../Components/CallToAction";
+import StickySpacecraft from "../Components/StickySpacecraft";
 
 export default function Home() {
   const [apodData, setApodData] = useState([]);
@@ -71,6 +72,9 @@ export default function Home() {
   return (
     <Layout>
       <Head title="Beyond Earth - Journey Through Space" />
+
+      {/* 3D Sticky Spacecraft */}
+      <StickySpacecraft />
 
       {/* Hero Section - First Impression */}
       <Hero />

@@ -6,7 +6,7 @@ export default function InteractiveEarth({ epicImages, loading }) {
   return (
     <section
       id="earth"
-      className="relative py-32 bg-gradient-to-b from-black/50 to-space-dark"
+      className="relative min-h-[150vh] py-32 bg-gradient-to-b from-black/50 to-space-dark"
     >
       <div className="container mx-auto px-6">
         {/* Section Header */}
