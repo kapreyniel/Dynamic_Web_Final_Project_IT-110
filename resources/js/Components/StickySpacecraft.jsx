@@ -2,17 +2,18 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 export default function StickySpacecraft() {
-  const [isVisible, setIsVisible] = useState(true); // Start visible from loading screen
+  const [isVisible, setIsVisible] = useState(false); // Start hidden, show after hero loads
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [phase, setPhase] = useState("entry"); // entry, traveling
+  const [phase, setPhase] = useState("launch"); // launch, traveling, exploring
 
   useEffect(() => {
-    // Start as "entry" then transition to "traveling"
-    const timer = setTimeout(() => {
-      setPhase("traveling");
-    }, 1500);
+    // Wait for hero to render, then show spacecraft launching from badge position
+    const launchTimer = setTimeout(() => {
+      setIsVisible(true);
+      setTimeout(() => setPhase("traveling"), 2000); // Launch animation duration
+    }, 500);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(launchTimer);
   }, []);
 
   useEffect(() => {
@@ -40,31 +41,49 @@ export default function StickySpacecraft() {
 
   if (!isVisible) return null;
 
-  // Calculate dynamic position based on scroll
-  const topPosition = phase === "entry" ? "50%" : `${15 + scrollProgress * 60}%`;
-  const leftPosition = phase === "entry" ? "5%" : `${5 + Math.sin(scrollProgress * Math.PI * 3) * 40}%`;
-  const rotation = phase === "entry" ? 0 : scrollProgress * 360;
-  const scale = phase === "entry" ? 1.2 : 1 + scrollProgress * 0.4;
+  // Calculate dynamic position based on phase and scroll
+  const getPosition = () => {
+    if (phase === "launch") {
+      // Start at the Hero badge position (top left of hero section)
+      return {
+        topPosition: "20%",
+        leftPosition: "12%",
+        rotation: 45, // Angled upward for launch
+        scale: 0.8,
+      };
+    }
+    // Traveling phase - move with scroll in dynamic path
+    return {
+      topPosition: `${15 + scrollProgress * 60}%`,
+      leftPosition: `${10 + Math.sin(scrollProgress * Math.PI * 3) * 35}%`,
+      rotation: scrollProgress * 360,
+      scale: 1 + scrollProgress * 0.4,
+    };
+  };
+
+  const { topPosition, leftPosition, rotation, scale } = getPosition();
 
   return (
     <motion.div
       className="fixed z-50 pointer-events-none"
-      initial={{ x: -300, opacity: 0 }}
+      initial={{
+        opacity: 0,
+        scale: 0.6,
+      }}
       animate={{
-        x: 0,
-        opacity: Math.max(0.6, 1 - scrollProgress * 0.5),
+        opacity:
+          phase === "launch" ? 1 : Math.max(0.6, 1 - scrollProgress * 0.5),
         top: topPosition,
         left: leftPosition,
         scale: scale,
         rotate: rotation,
       }}
       transition={{
-        x: { duration: 2, ease: "easeOut" },
-        opacity: { duration: 0.5 },
-        top: { duration: 0.4, ease: "easeOut" },
-        left: { duration: 0.6, ease: "easeInOut" },
-        scale: { duration: 0.5 },
-        rotate: { duration: 0.8, ease: "linear" },
+        opacity: { duration: phase === "launch" ? 0.8 : 0.5 },
+        top: { duration: phase === "launch" ? 2 : 0.4, ease: "easeOut" },
+        left: { duration: phase === "launch" ? 2 : 0.6, ease: "easeInOut" },
+        scale: { duration: phase === "launch" ? 1.5 : 0.5, ease: "easeOut" },
+        rotate: { duration: phase === "launch" ? 2 : 0.8, ease: "linear" },
       }}
     >
       <div className="relative">
@@ -126,8 +145,22 @@ export default function StickySpacecraft() {
           />
 
           {/* Cockpit Window */}
-          <ellipse cx="90" cy="30" rx="15" ry="12" fill="#1e40af" opacity="0.8" />
-          <ellipse cx="90" cy="30" rx="10" ry="8" fill="#3b82f6" opacity="0.6" />
+          <ellipse
+            cx="90"
+            cy="30"
+            rx="15"
+            ry="12"
+            fill="#1e40af"
+            opacity="0.8"
+          />
+          <ellipse
+            cx="90"
+            cy="30"
+            rx="10"
+            ry="8"
+            fill="#3b82f6"
+            opacity="0.6"
+          />
           <ellipse cx="92" cy="28" rx="5" ry="4" fill="#60a5fa" opacity="0.9" />
 
           {/* Wings */}
@@ -151,12 +184,42 @@ export default function StickySpacecraft() {
           </ellipse>
 
           {/* Detail Lines */}
-          <line x1="30" y1="30" x2="95" y2="30" stroke="#06b6d4" strokeWidth="1" opacity="0.5" />
-          <line x1="35" y1="25" x2="90" y2="20" stroke="#8b5cf6" strokeWidth="0.5" opacity="0.4" />
-          <line x1="35" y1="35" x2="90" y2="40" stroke="#8b5cf6" strokeWidth="0.5" opacity="0.4" />
+          <line
+            x1="30"
+            y1="30"
+            x2="95"
+            y2="30"
+            stroke="#06b6d4"
+            strokeWidth="1"
+            opacity="0.5"
+          />
+          <line
+            x1="35"
+            y1="25"
+            x2="90"
+            y2="20"
+            stroke="#8b5cf6"
+            strokeWidth="0.5"
+            opacity="0.4"
+          />
+          <line
+            x1="35"
+            y1="35"
+            x2="90"
+            y2="40"
+            stroke="#8b5cf6"
+            strokeWidth="0.5"
+            opacity="0.4"
+          />
 
           <defs>
-            <linearGradient id="spacecraft-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="spacecraft-gradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#6366f1" />
               <stop offset="50%" stopColor="#8b5cf6" />
               <stop offset="100%" stopColor="#06b6d4" />
@@ -168,7 +231,8 @@ export default function StickySpacecraft() {
         <motion.div
           className="absolute right-full top-1/2 -translate-y-1/2 h-2"
           style={{
-            background: "linear-gradient(to left, rgba(236, 72, 153, 0.9), rgba(139, 92, 246, 0.6), transparent)",
+            background:
+              "linear-gradient(to left, rgba(236, 72, 153, 0.9), rgba(139, 92, 246, 0.6), transparent)",
           }}
           animate={{
             width: [120, 220, 120],
@@ -215,7 +279,7 @@ export default function StickySpacecraft() {
             <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-cyan-400" />
             <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-cyan-400" />
             <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-cyan-400" />
-            
+
             <div className="px-5 py-2 bg-black/80 backdrop-blur-md border border-cyan-400/60 rounded">
               <div className="text-xs font-bold text-cyan-300 tracking-wider mb-0.5">
                 EXPLORER-1
