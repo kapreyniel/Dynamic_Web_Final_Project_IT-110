@@ -59,9 +59,8 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
         currentStep++;
         setTimeout(runStep, step.time);
       } else {
-        setTimeout(() => {
-          if (onLoadingComplete) onLoadingComplete();
-        }, 500);
+        // Immediate transition - no delay for smooth video-like continuity
+        if (onLoadingComplete) onLoadingComplete();
       }
     };
 
@@ -73,7 +72,12 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden">
+    <motion.div
+      className="fixed inset-0 z-50 bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
       {/* Animated Starfield Background */}
       <div className="absolute inset-0 z-10">
         {[...Array(200)].map((_, i) => (
@@ -176,17 +180,21 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
 
       {/* Spacecraft */}
       <motion.div
-        className="absolute left-10 top-1/2 -translate-y-1/2 z-30"
+        className="absolute z-30"
         style={{
           x: spacecraftPosition * 8,
+          left: "10%",
+          top: "20%",
         }}
         animate={{
           y: phase === "landing" ? [0, -20, 0, -10, 0] : 0,
-          rotate: phase === "landing" ? [0, -5, 5, -2, 0] : 0,
+          rotate: phase === "landing" ? [0, -5, 5, -2, 45] : 0,
+          opacity: progress === 100 ? 0 : 1,
         }}
         transition={{
           y: phase === "landing" ? { duration: 2, ease: "easeInOut" } : {},
           rotate: phase === "landing" ? { duration: 2, ease: "easeInOut" } : {},
+          opacity: { duration: 0.3, delay: progress === 100 ? 0 : 0 },
         }}
       >
         <div className="relative">
@@ -453,6 +461,6 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
         />
       </div>
-    </div>
+    </motion.div>
   );
 }

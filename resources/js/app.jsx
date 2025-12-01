@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { createInertiaApp } from "@inertiajs/react";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
+import { AnimatePresence } from "framer-motion";
 import LoadingScreen3D from "./Components/LoadingScreen3D";
 import AuthPage from "./Pages/AuthPage";
 
@@ -58,18 +59,21 @@ function AppWrapper({ App, props }) {
     setShowAuth(false);
   };
 
-  // Show 3D loading screen
-  if (showLoading) {
-    return <LoadingScreen3D onLoadingComplete={handleLoadingComplete} />;
-  }
-
-  // Show auth page if not authenticated
-  if (showAuth && !isAuthenticated) {
-    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
-  }
-
-  // Show main app if authenticated
-  return <App {...props} />;
+  // Smooth transitions between screens
+  return (
+    <AnimatePresence mode="wait">
+      {showLoading ? (
+        <LoadingScreen3D
+          key="loading"
+          onLoadingComplete={handleLoadingComplete}
+        />
+      ) : showAuth && !isAuthenticated ? (
+        <AuthPage key="auth" onAuthSuccess={handleAuthSuccess} />
+      ) : (
+        <App key="app" {...props} />
+      )}
+    </AnimatePresence>
+  );
 }
 
 createInertiaApp({

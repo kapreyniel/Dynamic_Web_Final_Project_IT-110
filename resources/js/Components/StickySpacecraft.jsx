@@ -7,13 +7,12 @@ export default function StickySpacecraft() {
   const [phase, setPhase] = useState("launch"); // launch, traveling, exploring
 
   useEffect(() => {
-    // Wait for hero to render, then show spacecraft launching from badge position
-    const launchTimer = setTimeout(() => {
-      setIsVisible(true);
-      setTimeout(() => setPhase("traveling"), 2000); // Launch animation duration
-    }, 500);
+    // Show spacecraft immediately for seamless transition from loading screen
+    setIsVisible(true);
+    // Start traveling phase after brief launch animation
+    const phaseTimer = setTimeout(() => setPhase("traveling"), 1500);
 
-    return () => clearTimeout(launchTimer);
+    return () => clearTimeout(phaseTimer);
   }, []);
 
   useEffect(() => {
@@ -67,8 +66,8 @@ export default function StickySpacecraft() {
     <motion.div
       className="fixed z-50 pointer-events-none"
       initial={{
-        opacity: 0,
-        scale: 0.6,
+        opacity: 1,
+        scale: 0.8,
       }}
       animate={{
         opacity:
@@ -79,11 +78,11 @@ export default function StickySpacecraft() {
         rotate: rotation,
       }}
       transition={{
-        opacity: { duration: phase === "launch" ? 0.8 : 0.5 },
-        top: { duration: phase === "launch" ? 2 : 0.4, ease: "easeOut" },
-        left: { duration: phase === "launch" ? 2 : 0.6, ease: "easeInOut" },
-        scale: { duration: phase === "launch" ? 1.5 : 0.5, ease: "easeOut" },
-        rotate: { duration: phase === "launch" ? 2 : 0.8, ease: "linear" },
+        opacity: { duration: 0.4 },
+        top: { duration: phase === "launch" ? 1.5 : 0.4, ease: "easeOut" },
+        left: { duration: phase === "launch" ? 1.5 : 0.6, ease: "easeInOut" },
+        scale: { duration: phase === "launch" ? 1.2 : 0.5, ease: "easeOut" },
+        rotate: { duration: phase === "launch" ? 1.5 : 0.8, ease: "linear" },
       }}
     >
       <div className="relative">
