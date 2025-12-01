@@ -48,7 +48,7 @@ export default function StickySpacecraft() {
         topPosition: "20%",
         leftPosition: "12%",
         rotation: 45, // Angled upward for launch
-        scale: 0.8,
+        scale: 1.5, // Bigger for visibility during transition
       };
     }
     // Traveling phase - move with scroll in dynamic path
@@ -56,7 +56,7 @@ export default function StickySpacecraft() {
       topPosition: `${15 + scrollProgress * 60}%`,
       leftPosition: `${10 + Math.sin(scrollProgress * Math.PI * 3) * 35}%`,
       rotation: scrollProgress * 360,
-      scale: 1 + scrollProgress * 0.4,
+      scale: 1.3 + scrollProgress * 0.4, // Start bigger, grow more
     };
   };
 
@@ -67,7 +67,7 @@ export default function StickySpacecraft() {
       className="fixed z-50 pointer-events-none"
       initial={{
         opacity: 1,
-        scale: 0.8,
+        scale: 1.5, // Start bigger for visibility
       }}
       animate={{
         opacity: 1,
@@ -80,7 +80,10 @@ export default function StickySpacecraft() {
         top: { duration: phase === "launch" ? 1.5 : 0.4, ease: "easeOut" },
         left: { duration: phase === "launch" ? 1.5 : 0.6, ease: "easeInOut" },
         scale: { duration: phase === "launch" ? 1.2 : 0.5, ease: "easeOut" },
-        rotate: { duration: phase === "launch" ? 1.5 : 0.8, ease: "easeLinear" },
+        rotate: {
+          duration: phase === "launch" ? 1.5 : 0.8,
+          ease: "easeLinear",
+        },
       }}
     >
       <div className="relative">
