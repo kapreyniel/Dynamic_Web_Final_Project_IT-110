@@ -94,7 +94,7 @@ export default function SolarSystem() {
     // Add mouse move listener for hover detection
     const handleMouseMove = (event) => {
       if (!containerRef.current) return;
-      
+
       const rect = containerRef.current.getBoundingClientRect();
       mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -110,7 +110,10 @@ export default function SolarSystem() {
 
       // Check for planet hover
       raycasterRef.current.setFromCamera(mouseRef.current, camera);
-      const intersects = raycasterRef.current.intersectObjects(planetsRef.current, true);
+      const intersects = raycasterRef.current.intersectObjects(
+        planetsRef.current,
+        true
+      );
 
       if (intersects.length > 0) {
         // Find the planet object (might be a child mesh of the GLB model)
@@ -494,6 +497,9 @@ export default function SolarSystem() {
   useEffect(() => {
     if (!loading) {
       moveToPlanet(exhibits[currentExhibit].name);
+      // Don't show info automatically - only on hover
+      setExhibitInfo(null);
+      setHoveredPlanet(null);
     }
   }, [currentExhibit, loading]);
 
