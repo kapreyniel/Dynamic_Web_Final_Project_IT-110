@@ -10,12 +10,12 @@ export default function Layout({ children }) {
       {/* Animated Star Background */}
       <StarField />
 
-      {/* Main Content */}
+      {/* Main Content - Delayed to allow spacecraft landing animation */}
       <motion.div
         className="relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
+        transition={{ duration: 1.2, delay: 1 }} // 1s delay for spacecraft landing
       >
         <Navbar />
         <main>{children}</main>

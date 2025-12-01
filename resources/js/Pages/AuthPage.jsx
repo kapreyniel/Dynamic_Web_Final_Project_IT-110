@@ -1,7 +1,136 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaLock, FaEnvelope, FaRocket, FaGoogle } from "react-icons/fa";
 import axios from "axios";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { PerspectiveCamera, Float } from "@react-three/drei";
+import { gsap } from "gsap";
+import * as THREE from "three";
+
+// 3D Spacecraft for Auth Page - Continues journey from LoadingScreen
+function AuthSpacecraft() {
+  const groupRef = useRef();
+
+  useEffect(() => {
+    if (!groupRef.current) return;
+
+    // Enter from far right (continuing from LoadingScreen)
+    gsap.fromTo(
+      groupRef.current.position,
+      { x: 12, y: 0, z: 0 },
+      {
+        duration: 3,
+        x: -12, // Travel across screen to exit left
+        ease: "none", // Constant speed for continuous motion
+      }
+    );
+
+    // Maintain scale from loading screen
+    gsap.fromTo(
+      groupRef.current.scale,
+      { x: 1.8, y: 1.8, z: 1.8 },
+      {
+        duration: 3,
+        x: 2.2,
+        y: 2.2,
+        z: 2.2, // Grow slightly for visibility
+        ease: "power1.inOut",
+      }
+    );
+  }, []);
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+
+    // Continuous floating and rotation
+    const time = state.clock.elapsedTime;
+    groupRef.current.position.y = Math.sin(time * 2) * 0.3;
+    groupRef.current.rotation.y += 0.02;
+    groupRef.current.rotation.z = Math.sin(time * 1.5) * 0.1;
+  });
+
+  return (
+    <Float speed={2} rotationIntensity={0.3} floatIntensity={0.5}>
+      <group ref={groupRef} position={[12, 0, 0]} rotation={[0, 0, 0]}>
+        {/* Main Hull */}
+        <mesh castShadow>
+          <coneGeometry args={[0.3, 1.2, 4]} />
+          <meshStandardMaterial
+            color="#6366f1"
+            metalness={0.9}
+            roughness={0.1}
+            emissive="#8b5cf6"
+            emissiveIntensity={0.6}
+          />
+        </mesh>
+
+        {/* Cockpit */}
+        <mesh position={[0, 0.3, 0.2]} castShadow>
+          <sphereGeometry args={[0.15, 16, 16]} />
+          <meshStandardMaterial
+            color="#3b82f6"
+            metalness={0.9}
+            roughness={0.1}
+            transparent
+            opacity={0.8}
+            emissive="#60a5fa"
+            emissiveIntensity={1}
+          />
+        </mesh>
+
+        {/* Wings */}
+        <mesh position={[-0.4, 0, 0]} rotation={[0, 0, Math.PI / 6]} castShadow>
+          <boxGeometry args={[0.6, 0.05, 0.3]} />
+          <meshStandardMaterial
+            color="#4f46e5"
+            metalness={0.8}
+            roughness={0.2}
+          />
+        </mesh>
+        <mesh position={[0.4, 0, 0]} rotation={[0, 0, -Math.PI / 6]} castShadow>
+          <boxGeometry args={[0.6, 0.05, 0.3]} />
+          <meshStandardMaterial
+            color="#4f46e5"
+            metalness={0.8}
+            roughness={0.2}
+          />
+        </mesh>
+
+        {/* Engine Glow */}
+        <pointLight
+          position={[0, -0.6, 0]}
+          color="#ec4899"
+          intensity={3}
+          distance={4}
+        />
+        <mesh position={[0, -0.6, 0]}>
+          <sphereGeometry args={[0.15, 16, 16]} />
+          <meshStandardMaterial
+            color="#ec4899"
+            emissive="#ec4899"
+            emissiveIntensity={2.5}
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+
+        {/* Exhaust Trail */}
+        {[...Array(10)].map((_, i) => (
+          <mesh key={i} position={[0, -0.8 - i * 0.18, 0]}>
+            <sphereGeometry args={[0.08 - i * 0.007, 8, 8]} />
+            <meshStandardMaterial
+              color="#f97316"
+              emissive="#f97316"
+              emissiveIntensity={2.5 - i * 0.2}
+              transparent
+              opacity={0.9 - i * 0.08}
+            />
+          </mesh>
+        ))}
+      </group>
+    </Float>
+  );
+}
 
 export default function AuthPage({ onAuthSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -64,7 +193,30 @@ export default function AuthPage({ onAuthSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-black to-purple-900 overflow-hidden">
+    <motion.div
+      className="fixed inset-0 bg-gradient-to-br from-gray-900 via-black to-purple-900 overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+    >
+      {/* 3D Spacecraft Canvas - Continuous Journey */}
+      <div className="absolute inset-0 z-30 pointer-events-none">
+        <Canvas shadows dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
+          <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={60} />
+          <ambientLight intensity={0.3} color="#e0f2fe" />
+          <directionalLight
+            position={[5, 5, 5]}
+            intensity={1}
+            color="#fef3c7"
+            castShadow
+          />
+          <pointLight position={[-5, 0, 0]} color="#8b5cf6" intensity={0.5} />
+          <pointLight position={[5, 0, 0]} color="#06b6d4" intensity={0.5} />
+          <AuthSpacecraft />
+        </Canvas>
+      </div>
+
       {/* Animated background stars */}
       <div className="absolute inset-0 z-0">
         {[...Array(150)].map((_, i) => (
@@ -188,11 +340,17 @@ export default function AuthPage({ onAuthSuccess }) {
         <div className="absolute inset-2 rounded-full bg-gradient-to-br from-gray-400 to-gray-800" />
       </motion.div>
 
-      <div className="relative z-20 min-h-screen flex items-center justify-center p-6">
+      <motion.div
+        className="relative z-20 min-h-screen flex items-center justify-center p-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
           className="w-full max-w-md"
         >
           {/* Logo */}
@@ -374,7 +532,7 @@ export default function AuthPage({ onAuthSuccess }) {
             Embark on your cosmic journey
           </motion.p>
         </motion.div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { 
-  PerspectiveCamera, 
-  Float, 
+import {
+  PerspectiveCamera,
+  Float,
   Sphere,
   MeshDistortMaterial,
   Stars as DreiStars,
-  Cloud
+  Cloud,
 } from "@react-three/drei";
 import { gsap } from "gsap";
 import * as THREE from "three";
@@ -21,9 +21,10 @@ function DestinationPlanet({ phase, progress }) {
     if (planetRef.current) {
       // Continuous rotation
       planetRef.current.rotation.y += 0.002;
-      
+
       // Scale based on phase with GSAP-style easing
-      const targetScale = phase === "landing" ? 3 : phase === "approach" ? 1.2 : 0.5;
+      const targetScale =
+        phase === "landing" ? 3 : phase === "approach" ? 1.2 : 0.5;
       planetRef.current.scale.lerp(
         new THREE.Vector3(targetScale, targetScale, targetScale),
         0.05
@@ -37,7 +38,7 @@ function DestinationPlanet({ phase, progress }) {
 
   return (
     <Float speed={1} rotationIntensity={0.2} floatIntensity={0.3}>
-      <group 
+      <group
         ref={planetRef}
         position={phase === "landing" ? [0, 0, 0] : [3, 1, -2]}
       >
@@ -87,10 +88,10 @@ function DestinationPlanet({ phase, progress }) {
         </mesh>
 
         {/* Point light from planet */}
-        <pointLight 
-          position={[0, 0, 0]} 
-          intensity={2} 
-          color="#f97316" 
+        <pointLight
+          position={[0, 0, 0]}
+          intensity={2}
+          color="#f97316"
           distance={10}
         />
       </group>
@@ -105,20 +106,35 @@ function SpacecraftModel({ phase, spacecraftPosition }) {
   useFrame((state) => {
     if (!groupRef.current) return;
 
-    // Horizontal movement
-    groupRef.current.position.x = -3 + (spacecraftPosition / 100) * 8;
+    // Cinematic horizontal movement - continuous journey
+    // Accelerates from -3 to beyond screen (12 units) for smooth handoff to main spacecraft
+    groupRef.current.position.x = -3 + (spacecraftPosition / 100) * 15;
 
-    // Landing animation with GSAP-style bounce
-    if (phase === "landing") {
-      const bounce = Math.sin(state.clock.elapsedTime * 3) * 0.1;
-      groupRef.current.position.y = bounce;
-      groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 2) * 0.1;
-    }
+    // Dynamic floating motion - more pronounced during travel
+    const floatIntensity =
+      phase === "travel" ? 0.2 : phase === "approach" ? 0.15 : 0.1;
+    const floatY = Math.sin(state.clock.elapsedTime * 2) * floatIntensity;
+    groupRef.current.position.y = floatY;
+
+    // Cinematic roll and pitch for realism
+    groupRef.current.rotation.z =
+      Math.sin(state.clock.elapsedTime * 1.5) * 0.08;
+    groupRef.current.rotation.x =
+      Math.cos(state.clock.elapsedTime * 1.2) * 0.04;
+
+    // Scale up as it travels for better visibility and dramatic effect
+    const scaleProgress = spacecraftPosition / 100;
+    const scale = 1 + scaleProgress * 0.8; // Grows from 1x to 1.8x
+    groupRef.current.scale.setScalar(scale);
   });
 
   return (
     <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.3}>
-      <group ref={groupRef} position={[-3, 0, 0]} rotation={[0, 0, Math.PI / 8]}>
+      <group
+        ref={groupRef}
+        position={[-3, 0, 0]}
+        rotation={[0, 0, Math.PI / 8]}
+      >
         {/* Main Hull - Tailwind indigo */}
         <mesh castShadow>
           <coneGeometry args={[0.2, 0.8, 4]} />
@@ -146,7 +162,11 @@ function SpacecraftModel({ phase, spacecraftPosition }) {
         </mesh>
 
         {/* Wings - Tailwind indigo */}
-        <mesh position={[-0.25, 0, 0]} rotation={[0, 0, Math.PI / 4]} castShadow>
+        <mesh
+          position={[-0.25, 0, 0]}
+          rotation={[0, 0, Math.PI / 4]}
+          castShadow
+        >
           <boxGeometry args={[0.4, 0.03, 0.2]} />
           <meshStandardMaterial
             color="#4f46e5" // Tailwind indigo-600
@@ -154,7 +174,11 @@ function SpacecraftModel({ phase, spacecraftPosition }) {
             roughness={0.2}
           />
         </mesh>
-        <mesh position={[0.25, 0, 0]} rotation={[0, 0, -Math.PI / 4]} castShadow>
+        <mesh
+          position={[0.25, 0, 0]}
+          rotation={[0, 0, -Math.PI / 4]}
+          castShadow
+        >
           <boxGeometry args={[0.4, 0.03, 0.2]} />
           <meshStandardMaterial
             color="#4f46e5" // Tailwind indigo-600
@@ -164,9 +188,9 @@ function SpacecraftModel({ phase, spacecraftPosition }) {
         </mesh>
 
         {/* Engine Glow - Tailwind pink */}
-        <pointLight 
-          position={[0, -0.4, 0]} 
-          intensity={2} 
+        <pointLight
+          position={[0, -0.4, 0]}
+          intensity={2}
           color="#ec4899" // Tailwind pink-500
           distance={2}
         />
@@ -209,7 +233,7 @@ function Asteroids({ show }) {
         asteroid.position.x -= 0.05;
         asteroid.rotation.x += 0.01;
         asteroid.rotation.y += 0.02;
-        
+
         if (asteroid.position.x < -10) {
           asteroid.position.x = 5;
           asteroid.position.y = (Math.random() - 0.5) * 4;
@@ -229,7 +253,7 @@ function Asteroids({ show }) {
           position={[
             Math.random() * 10 - 5,
             (Math.random() - 0.5) * 4,
-            (Math.random() - 0.5) * 4
+            (Math.random() - 0.5) * 4,
           ]}
           castShadow
         >
@@ -250,12 +274,12 @@ function Scene3D({ phase, progress, spacecraftPosition }) {
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={60} />
-      
+
       {/* Lighting with Tailwind colors */}
       <ambientLight intensity={0.2} color="#e0f2fe" />
-      <directionalLight 
-        position={[5, 5, 5]} 
-        intensity={1} 
+      <directionalLight
+        position={[5, 5, 5]}
+        intensity={1}
         color="#fef3c7"
         castShadow
       />
@@ -263,13 +287,13 @@ function Scene3D({ phase, progress, spacecraftPosition }) {
       <pointLight position={[0, 5, 0]} intensity={0.3} color="#06b6d4" />
 
       {/* R3F Drei Stars */}
-      <DreiStars 
-        radius={100} 
-        depth={50} 
-        count={5000} 
-        factor={4} 
-        saturation={0} 
-        fade 
+      <DreiStars
+        radius={100}
+        depth={50}
+        count={5000}
+        factor={4}
+        saturation={0}
+        fade
         speed={1}
       />
 
@@ -283,18 +307,45 @@ function Scene3D({ phase, progress, spacecraftPosition }) {
 
 export default function LoadingScreen3D({ onLoadingComplete }) {
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState("Initializing spacecraft systems...");
+  const [loadingText, setLoadingText] = useState(
+    "Initializing spacecraft systems..."
+  );
   const [phase, setPhase] = useState("travel");
   const [spacecraftPosition, setSpacecraftPosition] = useState(0);
 
   useEffect(() => {
     // GSAP-powered loading sequence
     const loadingSteps = [
-      { progress: 20, text: "Initializing spacecraft systems...", phase: "travel", time: 800 },
-      { progress: 40, text: "Accelerating through asteroid field...", phase: "travel", time: 1000 },
-      { progress: 60, text: "Approaching destination planet...", phase: "approach", time: 1000 },
-      { progress: 80, text: "Entering planetary orbit...", phase: "approach", time: 1000 },
-      { progress: 95, text: "Preparing for landing sequence...", phase: "landing", time: 800 },
+      {
+        progress: 20,
+        text: "Initializing spacecraft systems...",
+        phase: "travel",
+        time: 800,
+      },
+      {
+        progress: 40,
+        text: "Accelerating through asteroid field...",
+        phase: "travel",
+        time: 1000,
+      },
+      {
+        progress: 60,
+        text: "Approaching destination planet...",
+        phase: "approach",
+        time: 1000,
+      },
+      {
+        progress: 80,
+        text: "Entering planetary orbit...",
+        phase: "approach",
+        time: 1000,
+      },
+      {
+        progress: 95,
+        text: "Preparing for landing sequence...",
+        phase: "landing",
+        time: 800,
+      },
       { progress: 100, text: "Landing complete!", phase: "landing", time: 400 },
     ];
 
@@ -303,16 +354,19 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
     const runStep = () => {
       if (currentStep < loadingSteps.length) {
         const step = loadingSteps[currentStep];
-        
+
         // GSAP animation for smooth progress
-        gsap.to({ val: progress }, {
-          val: step.progress,
-          duration: step.time / 1000,
-          onUpdate: function() {
-            setProgress(Math.round(this.targets()[0].val));
-          },
-          ease: "power2.out"
-        });
+        gsap.to(
+          { val: progress },
+          {
+            val: step.progress,
+            duration: step.time / 1000,
+            onUpdate: function () {
+              setProgress(Math.round(this.targets()[0].val));
+            },
+            ease: "power2.out",
+          }
+        );
 
         setLoadingText(step.text);
         setPhase(step.phase);
@@ -332,18 +386,23 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
       className="fixed inset-0 z-50 bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
+      transition={{ duration: 1.2, ease: "easeInOut" }} // Longer fade for cinematic transition
     >
-      {/* R3F Canvas for 3D scene */}
-      <div className="absolute inset-0 z-10">
+      {/* R3F Canvas for 3D scene - stays visible during transition */}
+      <motion.div
+        className="absolute inset-0 z-10"
+        initial={{ opacity: 1 }}
+        exit={{ opacity: 1 }} // Keep 3D scene visible during exit
+        transition={{ duration: 0 }}
+      >
         <Canvas shadows dpr={[1, 2]}>
-          <Scene3D 
-            phase={phase} 
-            progress={progress} 
+          <Scene3D
+            phase={phase}
+            progress={progress}
             spacecraftPosition={spacecraftPosition}
           />
         </Canvas>
-      </div>
+      </motion.div>
 
       {/* Loading UI Overlay - Tailwind CSS */}
       <div className="absolute inset-0 flex flex-col items-center justify-end pb-20 pointer-events-none z-40">
@@ -404,14 +463,20 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent"
                     animate={{ x: ["-100%", "200%"] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                 </motion.div>
               </div>
 
               {/* Progress Percentage */}
               <div className="flex justify-between items-center mt-3">
-                <span className="text-cyan-400 font-mono text-sm">PROGRESS</span>
+                <span className="text-cyan-400 font-mono text-sm">
+                  PROGRESS
+                </span>
                 <motion.span
                   className="text-2xl font-bold font-mono bg-gradient-to-r from-cyan-500 to-pink-500 bg-clip-text text-transparent"
                   animate={{ scale: [1, 1.1, 1] }}
@@ -434,9 +499,7 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
                     : "border-gray-600 bg-gray-900/40 text-gray-500"
                 }`}
                 animate={
-                  progress >= (idx + 1) * 25
-                    ? { scale: [1, 1.05, 1] }
-                    : {}
+                  progress >= (idx + 1) * 25 ? { scale: [1, 1.05, 1] } : {}
                 }
                 transition={{ duration: 1, repeat: Infinity }}
               >

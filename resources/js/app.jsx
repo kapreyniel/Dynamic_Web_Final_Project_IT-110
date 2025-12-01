@@ -59,9 +59,11 @@ function AppWrapper({ App, props }) {
     setShowAuth(false);
   };
 
-  // Smooth transitions between screens
+  // Smooth cinematic transitions between screens
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="sync">
+      {" "}
+      {/* sync mode for overlapping transitions */}
       {showLoading ? (
         <LoadingScreen3D
           key="loading"

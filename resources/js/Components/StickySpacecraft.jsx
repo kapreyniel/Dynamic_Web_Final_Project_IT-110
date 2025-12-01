@@ -23,24 +23,41 @@ function SpacecraftModel({ scrollProgress }) {
   useEffect(() => {
     if (!groupRef.current) return;
 
-    // Initial position for launch phase
+    // Start from far left (continuing from AuthPage exit) for seamless handoff
     gsap.fromTo(
       groupRef.current.position,
-      { x: -3, y: 0, z: 0 },
+      { x: -12, y: 0, z: 0 }, // Enters from left where AuthPage spacecraft exits
       {
-        duration: 1.5,
+        duration: 3, // Slower, more cinematic entry
         x: 0,
-        ease: "power2.out",
+        ease: "power2.inOut",
+        delay: 0.5, // Small delay for transition overlap
       }
     );
 
+    // Start with forward-facing orientation, smoothly transition
     gsap.fromTo(
       groupRef.current.rotation,
-      { z: Math.PI / 4 },
+      { z: 0 }, // Start level for continuity
       {
-        duration: 1.5,
+        duration: 3,
         z: 0,
-        ease: "power2.out",
+        ease: "power2.inOut",
+        delay: 0.5,
+      }
+    );
+
+    // Cinematic scale entrance - start large from AuthPage
+    gsap.fromTo(
+      groupRef.current.scale,
+      { x: 2.2, y: 2.2, z: 2.2 }, // Match AuthPage end scale
+      {
+        duration: 3,
+        x: 1,
+        y: 1,
+        z: 1,
+        ease: "power2.inOut",
+        delay: 0.5,
       }
     );
   }, []);
@@ -55,19 +72,21 @@ function SpacecraftModel({ scrollProgress }) {
     const easeOutQuad = (t) => t * (2 - t);
     const easedScroll = easeOutQuad(scroll);
 
-    // Horizontal S-curve path with Tailwind spacing values
-    groupRef.current.position.x = Math.sin(scroll * Math.PI * 2) * 2;
+    // Cinematic horizontal S-curve path - wider range for dramatic effect
+    groupRef.current.position.x = Math.sin(scroll * Math.PI * 2) * 2.5;
 
-    // Vertical movement with smooth easing
-    groupRef.current.position.y = -easedScroll * 3 + 1;
+    // Vertical descent with smooth easing - deeper travel
+    groupRef.current.position.y = -easedScroll * 4 + 1;
 
-    // Continuous rotation (720 degrees total)
-    groupRef.current.rotation.y = scroll * Math.PI * 4;
-    groupRef.current.rotation.z = Math.sin(scroll * Math.PI * 2) * 0.3;
+    // Cinematic continuous rotation with barrel rolls
+    groupRef.current.rotation.y = scroll * Math.PI * 5; // More rotation
+    groupRef.current.rotation.z = Math.sin(scroll * Math.PI * 2) * 0.4;
+    groupRef.current.rotation.x = Math.cos(scroll * Math.PI * 3) * 0.2; // Added pitch
 
-    // Pulse scale with sine wave
+    // Dynamic scale - grows and shrinks for depth perception
     const pulseScale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.05;
-    groupRef.current.scale.setScalar(pulseScale * (1 + scroll * 0.5));
+    const depthScale = 1 + scroll * 0.7; // Grows as it descends
+    groupRef.current.scale.setScalar(pulseScale * depthScale);
   });
 
   return (
@@ -151,16 +170,16 @@ function SpacecraftModel({ scrollProgress }) {
           />
         </mesh>
 
-        {/* Exhaust Trail Particles with Tailwind orange */}
-        {[...Array(5)].map((_, i) => (
-          <mesh key={i} position={[0, -0.8 - i * 0.2, 0]}>
-            <sphereGeometry args={[0.05 - i * 0.008, 8, 8]} />
+        {/* Exhaust Trail Particles with Tailwind orange - extended for motion blur effect */}
+        {[...Array(8)].map((_, i) => (
+          <mesh key={i} position={[0, -0.8 - i * 0.15, 0]}>
+            <sphereGeometry args={[0.06 - i * 0.006, 8, 8]} />
             <meshStandardMaterial
               color="#f97316" // Tailwind orange-500
               emissive="#f97316"
-              emissiveIntensity={1.5 - i * 0.2}
+              emissiveIntensity={2 - i * 0.2}
               transparent
-              opacity={0.6 - i * 0.1}
+              opacity={0.8 - i * 0.09}
             />
           </mesh>
         ))}
