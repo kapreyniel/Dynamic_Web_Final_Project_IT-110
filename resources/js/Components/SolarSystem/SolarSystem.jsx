@@ -15,10 +15,13 @@ export default function SolarSystem() {
   const planetObjectsRef = useRef({});
   const moonsRef = useRef([]);
   const animationIdRef = useRef(null);
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const mouseRef = useRef(new THREE.Vector2());
 
   const [currentExhibit, setCurrentExhibit] = useState(0);
   const [loading, setLoading] = useState(true);
   const [exhibitInfo, setExhibitInfo] = useState(null);
+  const [hoveredPlanet, setHoveredPlanet] = useState(null);
 
   const exhibits = [
     { name: "Sun", progress: 0 },
@@ -88,11 +91,53 @@ export default function SolarSystem() {
     // Create planets
     createPlanets(scene);
 
+    // Add mouse move listener for hover detection
+    const handleMouseMove = (event) => {
+      if (!containerRef.current) return;
+      
+      const rect = containerRef.current.getBoundingClientRect();
+      mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+
     // Animation loop
     const animate = () => {
       animationIdRef.current = requestAnimationFrame(animate);
 
       const time = Date.now() * 0.001;
+
+      // Check for planet hover
+      raycasterRef.current.setFromCamera(mouseRef.current, camera);
+      const intersects = raycasterRef.current.intersectObjects(planetsRef.current, true);
+
+      if (intersects.length > 0) {
+        // Find the planet object (might be a child mesh of the GLB model)
+        let planetObject = intersects[0].object;
+        while (planetObject.parent && !planetObject.userData.planet) {
+          planetObject = planetObject.parent;
+        }
+
+        if (planetObject.userData.planet) {
+          const planetKey = planetObject.userData.planet;
+          if (hoveredPlanet !== planetKey) {
+            setHoveredPlanet(planetKey);
+            const data = planetData[planetKey];
+            if (data) {
+              setExhibitInfo({
+                title: data.name,
+                description: data.description,
+              });
+            }
+          }
+        }
+      } else {
+        if (hoveredPlanet !== null) {
+          setHoveredPlanet(null);
+          setExhibitInfo(null);
+        }
+      }
 
       // Animate planets
       planetsRef.current.forEach((planet) => {
@@ -136,9 +181,11 @@ export default function SolarSystem() {
     };
 
     window.addEventListener("resize", handleResize);
+    window.addEventListener("mousemove", handleMouseMove);
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationIdRef.current);
       renderer.dispose();
       controls.dispose();
@@ -391,11 +438,6 @@ export default function SolarSystem() {
     );
 
     animateCameraTo(cameraPosition, planetPosition);
-
-    setExhibitInfo({
-      title: data.name,
-      description: data.description,
-    });
   };
 
   const animateCameraTo = (targetPosition, targetLookAt) => {
@@ -435,6 +477,7 @@ export default function SolarSystem() {
     if (currentExhibit < exhibits.length - 1) {
       const nextExhibit = currentExhibit + 1;
       setCurrentExhibit(nextExhibit);
+      setHoveredPlanet(null); // Clear hover when navigating
       moveToPlanet(exhibits[nextExhibit].name);
     }
   };
@@ -443,6 +486,7 @@ export default function SolarSystem() {
     if (currentExhibit > 0) {
       const prevExhibit = currentExhibit - 1;
       setCurrentExhibit(prevExhibit);
+      setHoveredPlanet(null); // Clear hover when navigating
       moveToPlanet(exhibits[prevExhibit].name);
     }
   };

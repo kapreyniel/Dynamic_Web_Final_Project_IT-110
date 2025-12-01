@@ -27,37 +27,36 @@ export default function InteractiveEarth({ epicImages, loading }) {
           </p>
         </motion.div>
 
-        {/* 3D Solar System Visualization - Full Width */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="glass-card h-[700px] overflow-hidden mb-12"
-        >
-          <Suspense
-            fallback={
-              <div className="h-full flex items-center justify-center">
-                <div className="text-white/70">Loading Solar System...</div>
-              </div>
-            }
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* 3D Solar System Visualization */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="glass-card h-[600px] overflow-hidden"
           >
-            <SolarSystemViewer />
-          </Suspense>
-        </motion.div>
+            <Suspense
+              fallback={
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-white/70">Loading Solar System...</div>
+                </div>
+              }
+            >
+              <SolarSystemViewer />
+            </Suspense>
+          </motion.div>
 
-        {/* Solar System Facts - Below Viewer */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-        >
-          <h3 className="text-3xl font-bold mb-8 text-center">
-            Discover the Cosmos
-          </h3>
+          {/* Solar System Facts */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="space-y-6"
+          >
+            <h3 className="text-3xl font-bold mb-6">Discover the Cosmos</h3>
 
-          <div className="grid md:grid-cols-3 gap-6">
             {[
               {
                 title: "Our Star System",
@@ -77,21 +76,17 @@ export default function InteractiveEarth({ epicImages, loading }) {
             ].map((fact, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -5 }}
-                className="glass-card text-center"
+                whileHover={{ x: 10 }}
+                className="glass-card"
               >
-                <h4 className="text-xl font-bold mb-3 text-cosmic-cyan">
+                <h4 className="text-xl font-bold mb-2 text-cosmic-cyan">
                   {fact.title}
                 </h4>
                 <p className="text-white/70">{fact.description}</p>
               </motion.div>
             ))}
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
