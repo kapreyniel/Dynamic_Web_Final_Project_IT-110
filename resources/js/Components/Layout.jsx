@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import StarField from './StarField';
@@ -10,11 +11,16 @@ export default function Layout({ children }) {
             <StarField />
             
             {/* Main Content */}
-            <div className="relative z-10">
+            <motion.div 
+                className="relative z-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+            >
                 <Navbar />
                 <main>{children}</main>
                 <Footer />
-            </div>
+            </motion.div>
         </div>
     );
 }

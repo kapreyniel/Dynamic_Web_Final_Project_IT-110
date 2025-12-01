@@ -70,19 +70,17 @@ export default function StickySpacecraft() {
         scale: 0.8,
       }}
       animate={{
-        opacity:
-          phase === "launch" ? 1 : Math.max(0.6, 1 - scrollProgress * 0.5),
+        opacity: 1,
         top: topPosition,
         left: leftPosition,
         scale: scale,
         rotate: rotation,
       }}
       transition={{
-        opacity: { duration: 0.4 },
         top: { duration: phase === "launch" ? 1.5 : 0.4, ease: "easeOut" },
         left: { duration: phase === "launch" ? 1.5 : 0.6, ease: "easeInOut" },
         scale: { duration: phase === "launch" ? 1.2 : 0.5, ease: "easeOut" },
-        rotate: { duration: phase === "launch" ? 1.5 : 0.8, ease: "linear" },
+        rotate: { duration: phase === "launch" ? 1.5 : 0.8, ease: "easeLinear" },
       }}
     >
       <div className="relative">

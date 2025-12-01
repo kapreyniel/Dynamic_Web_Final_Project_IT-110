@@ -189,12 +189,10 @@ export default function LoadingScreen3D({ onLoadingComplete }) {
         animate={{
           y: phase === "landing" ? [0, -20, 0, -10, 0] : 0,
           rotate: phase === "landing" ? [0, -5, 5, -2, 45] : 0,
-          opacity: progress === 100 ? 0 : 1,
         }}
         transition={{
           y: phase === "landing" ? { duration: 2, ease: "easeInOut" } : {},
           rotate: phase === "landing" ? { duration: 2, ease: "easeInOut" } : {},
-          opacity: { duration: 0.3, delay: progress === 100 ? 0 : 0 },
         }}
       >
         <div className="relative">
