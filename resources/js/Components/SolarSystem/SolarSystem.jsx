@@ -17,17 +17,11 @@ export default function SolarSystem() {
   const animationIdRef = useRef(null);
   const raycasterRef = useRef(new THREE.Raycaster());
   const mouseRef = useRef(new THREE.Vector2());
-  const floatingRendererRef = useRef(null);
-  const floatingSceneRef = useRef(null);
-  const floatingCameraRef = useRef(null);
-  const floatingPlanetRef = useRef(null);
 
   const [currentExhibit, setCurrentExhibit] = useState(0);
   const [loading, setLoading] = useState(true);
   const [exhibitInfo, setExhibitInfo] = useState(null);
   const [hoveredPlanet, setHoveredPlanet] = useState(null);
-  const [isFloating, setIsFloating] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   const exhibits = [
     { name: "Sun", progress: 0 },
@@ -107,29 +101,6 @@ export default function SolarSystem() {
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-
-    // Scroll listener for floating planet
-    const handleScroll = () => {
-      const earthSection = document.getElementById('earth');
-      if (!earthSection) return;
-
-      const rect = earthSection.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      
-      // Activate floating when section is scrolling out
-      if (rect.bottom < windowHeight * 0.6) {
-        setIsFloating(true);
-        // Calculate scroll progress (0 to 1+)
-        const progress = Math.max(0, -rect.bottom / windowHeight);
-        setScrollProgress(progress);
-      } else {
-        setIsFloating(false);
-        setScrollProgress(0);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
 
     // Animation loop
     const animate = () => {
@@ -215,8 +186,6 @@ export default function SolarSystem() {
     window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationIdRef.current);
       renderer.dispose();
@@ -532,105 +501,9 @@ export default function SolarSystem() {
     }
   }, [currentExhibit, loading]);
 
-  // Setup floating planet when scroll activates
-  useEffect(() => {
-    if (!isFloating) return;
-
-    const floatingContainer = document.getElementById('floating-planet-canvas');
-    if (!floatingContainer || floatingRendererRef.current) return;
-
-    // Create mini scene for floating planet
-    const scene = new THREE.Scene();
-    floatingSceneRef.current = scene;
-
-    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.z = 15;
-    floatingCameraRef.current = camera;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(200, 200);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    floatingContainer.appendChild(renderer.domElement);
-    floatingRendererRef.current = renderer;
-
-    // Clone current planet
-    const currentPlanetKey = exhibits[currentExhibit].name.toLowerCase();
-    const originalPlanet = planetObjectsRef.current[currentPlanetKey];
-    
-    if (originalPlanet) {
-      const planet = originalPlanet.clone();
-      planet.position.set(0, 0, 0);
-      scene.add(planet);
-      floatingPlanetRef.current = planet;
-    }
-
-    // Add light
-    const light = new THREE.PointLight(0xffffff, 1, 100);
-    light.position.set(10, 10, 10);
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0x404040));
-
-    // Animation loop for floating planet
-    const animateFloating = () => {
-      if (!floatingRendererRef.current) return;
-      requestAnimationFrame(animateFloating);
-
-      if (floatingPlanetRef.current) {
-        floatingPlanetRef.current.rotation.y += 0.005;
-        // Morph based on scroll
-        const scale = 1 + Math.sin(scrollProgress * 2) * 0.2;
-        floatingPlanetRef.current.scale.set(scale, scale, scale);
-      }
-
-      renderer.render(scene, camera);
-    };
-    animateFloating();
-
-    return () => {
-      if (floatingRendererRef.current) {
-        floatingContainer.removeChild(floatingRendererRef.current.domElement);
-        floatingRendererRef.current.dispose();
-        floatingRendererRef.current = null;
-      }
-    };
-  }, [isFloating, currentExhibit]);
-
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full" />
-
-      {/* Floating Planet */}
-      {isFloating && (
-        <div 
-          className="fixed z-50 transition-all duration-700 ease-out pointer-events-none"
-          style={{
-            top: `${20 + scrollProgress * 30}%`,
-            left: `${10 + Math.sin(scrollProgress) * 40}%`,
-            transform: `scale(${1 + scrollProgress * 0.5}) rotate(${scrollProgress * 180}deg)`,
-            opacity: Math.max(0.3, 1 - scrollProgress * 0.5),
-          }}
-        >
-          <div className="relative">
-            {/* Glow effect */}
-            <div 
-              className="absolute inset-0 blur-2xl rounded-full animate-pulse"
-              style={{
-                background: planetData[exhibits[currentExhibit].name.toLowerCase()]?.color || '#ffffff',
-                opacity: 0.4,
-                width: '250px',
-                height: '250px',
-                transform: 'translate(-25%, -25%)'
-              }}
-            />
-            {/* Planet canvas */}
-            <div id="floating-planet-canvas" className="relative" />
-            {/* Planet label */}
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-white font-bold text-sm whitespace-nowrap">
-              {exhibits[currentExhibit].name}
-            </div>
-          </div>
-        </div>
-      )}
 
       {!loading && (
         <SolarSystemUI

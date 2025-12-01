@@ -1,252 +1,232 @@
-import React, { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function StickySpacecraft() {
-  const containerRef = useRef(null);
-  const sceneRef = useRef(null);
-  const cameraRef = useRef(null);
-  const rendererRef = useRef(null);
-  const spacecraftRef = useRef(null);
-  const animationIdRef = useRef(null);
-  
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // Start visible from loading screen
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [phase, setPhase] = useState("entry"); // entry, traveling
 
   useEffect(() => {
-    // Show spacecraft after hero section
-    const handleScroll = () => {
-      const heroSection = document.getElementById('hero');
-      if (!heroSection) return;
+    // Start as "entry" then transition to "traveling"
+    const timer = setTimeout(() => {
+      setPhase("traveling");
+    }, 1500);
 
-      const rect = heroSection.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-
-      // Show when hero section starts scrolling out
-      if (rect.bottom < windowHeight) {
-        setIsVisible(true);
-        // Calculate scroll progress
-        const totalScroll = document.documentElement.scrollHeight - windowHeight;
-        const currentScroll = window.scrollY;
-        const progress = currentScroll / totalScroll;
-        setScrollProgress(progress);
-      } else {
-        setIsVisible(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current || !isVisible) return;
+    const handleScroll = () => {
+      // Calculate scroll progress
+      const totalScroll =
+        document.documentElement.scrollHeight - window.innerHeight;
+      const currentScroll = window.scrollY;
+      const progress = currentScroll / totalScroll;
+      setScrollProgress(progress);
 
-    // Setup Three.js scene
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
-
-    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.set(0, 2, 8);
-    camera.lookAt(0, 0, 0);
-    cameraRef.current = camera;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(200, 200);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    containerRef.current.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
-
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 5, 5);
-    scene.add(directionalLight);
-
-    const pointLight = new THREE.PointLight(0x00ffff, 1, 50);
-    pointLight.position.set(-5, 5, 5);
-    scene.add(pointLight);
-
-    // Create spacecraft geometry (rocket shape)
-    const createSpacecraft = () => {
-      const group = new THREE.Group();
-
-      // Main body (cone)
-      const bodyGeometry = new THREE.ConeGeometry(0.5, 3, 8);
-      const bodyMaterial = new THREE.MeshStandardMaterial({
-        color: 0xcccccc,
-        metalness: 0.8,
-        roughness: 0.2,
-      });
-      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-      body.position.y = 0;
-      group.add(body);
-
-      // Nose cone
-      const noseGeometry = new THREE.ConeGeometry(0.5, 1, 8);
-      const noseMaterial = new THREE.MeshStandardMaterial({
-        color: 0xff4444,
-        metalness: 0.9,
-        roughness: 0.1,
-      });
-      const nose = new THREE.Mesh(noseGeometry, noseMaterial);
-      nose.position.y = 2;
-      group.add(nose);
-
-      // Wings
-      const wingGeometry = new THREE.BoxGeometry(1.5, 0.1, 0.5);
-      const wingMaterial = new THREE.MeshStandardMaterial({
-        color: 0x4444ff,
-        metalness: 0.7,
-        roughness: 0.3,
-      });
-      
-      const wing1 = new THREE.Mesh(wingGeometry, wingMaterial);
-      wing1.position.set(0, -1, 0);
-      wing1.rotation.z = Math.PI / 6;
-      group.add(wing1);
-
-      const wing2 = new THREE.Mesh(wingGeometry, wingMaterial);
-      wing2.position.set(0, -1, 0);
-      wing2.rotation.z = -Math.PI / 6;
-      group.add(wing2);
-
-      // Engine glow
-      const glowGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.5, 8);
-      const glowMaterial = new THREE.MeshBasicMaterial({
-        color: 0x00ffff,
-        transparent: true,
-        opacity: 0.8,
-      });
-      const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-      glow.position.y = -1.7;
-      group.add(glow);
-
-      // Exhaust particles
-      const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-      const particleMaterial = new THREE.MeshBasicMaterial({
-        color: 0xff6600,
-        transparent: true,
-        opacity: 0.6,
-      });
-      
-      for (let i = 0; i < 5; i++) {
-        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-        particle.position.set(
-          (Math.random() - 0.5) * 0.3,
-          -2 - i * 0.3,
-          (Math.random() - 0.5) * 0.3
-        );
-        particle.userData = { speed: 0.05 + Math.random() * 0.05 };
-        group.add(particle);
-      }
-
-      return group;
-    };
-
-    const spacecraft = createSpacecraft();
-    spacecraft.rotation.z = -Math.PI / 6; // Tilt for travel
-    scene.add(spacecraft);
-    spacecraftRef.current = spacecraft;
-
-    // Animation loop
-    const animate = () => {
-      animationIdRef.current = requestAnimationFrame(animate);
-
-      if (spacecraftRef.current) {
-        // Rotation based on scroll
-        spacecraftRef.current.rotation.y += 0.01;
-        
-        // Wobble effect
-        const time = Date.now() * 0.001;
-        spacecraftRef.current.position.y = Math.sin(time * 2) * 0.2;
-        spacecraftRef.current.position.x = Math.sin(time) * 0.1;
-
-        // Animate exhaust particles
-        spacecraftRef.current.children.forEach((child) => {
-          if (child.userData.speed) {
-            child.position.y -= child.userData.speed;
-            if (child.position.y < -4) {
-              child.position.y = -2;
-            }
-            child.material.opacity = 0.6 - ((-2 - child.position.y) / 2) * 0.6;
-          }
-        });
-
-        // Tilt based on scroll direction
-        const targetRotation = scrollProgress * Math.PI * 0.2;
-        spacecraftRef.current.rotation.z += (targetRotation - spacecraftRef.current.rotation.z) * 0.1;
-      }
-
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
-      if (rendererRef.current && containerRef.current) {
-        containerRef.current.removeChild(rendererRef.current.domElement);
-        rendererRef.current.dispose();
+      // Hide when reaching near bottom
+      if (progress > 0.9) {
+        setIsVisible(false);
+      } else if (phase === "traveling") {
+        setIsVisible(true);
       }
     };
-  }, [isVisible, scrollProgress]);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [phase]);
 
   if (!isVisible) return null;
 
+  // Calculate dynamic position based on scroll
+  const topPosition = phase === "entry" ? "50%" : `${15 + scrollProgress * 60}%`;
+  const leftPosition = phase === "entry" ? "5%" : `${5 + Math.sin(scrollProgress * Math.PI * 3) * 40}%`;
+  const rotation = phase === "entry" ? 0 : scrollProgress * 360;
+  const scale = phase === "entry" ? 1.2 : 1 + scrollProgress * 0.4;
+
   return (
-    <div
-      className="fixed z-40 pointer-events-none transition-all duration-700 ease-out"
-      style={{
-        top: `${10 + scrollProgress * 40}%`,
-        right: `${5 + Math.sin(scrollProgress * Math.PI) * 10}%`,
-        transform: `scale(${1 + scrollProgress * 0.5}) rotate(${scrollProgress * 45}deg)`,
-        opacity: Math.max(0.7, 1 - scrollProgress * 0.3),
+    <motion.div
+      className="fixed z-50 pointer-events-none"
+      initial={{ x: -300, opacity: 0 }}
+      animate={{
+        x: 0,
+        opacity: Math.max(0.6, 1 - scrollProgress * 0.5),
+        top: topPosition,
+        left: leftPosition,
+        scale: scale,
+        rotate: rotation,
+      }}
+      transition={{
+        x: { duration: 2, ease: "easeOut" },
+        opacity: { duration: 0.5 },
+        top: { duration: 0.4, ease: "easeOut" },
+        left: { duration: 0.6, ease: "easeInOut" },
+        scale: { duration: 0.5 },
+        rotate: { duration: 0.8, ease: "linear" },
       }}
     >
       <div className="relative">
-        {/* Glow trail */}
-        <div
-          className="absolute inset-0 blur-2xl rounded-full animate-pulse"
+        {/* Glow Effect */}
+        <motion.div
+          className="absolute inset-0 blur-3xl rounded-full"
           style={{
-            background: 'radial-gradient(circle, rgba(0,255,255,0.4) 0%, transparent 70%)',
-            width: '300px',
-            height: '300px',
-            transform: 'translate(-35%, -35%)',
+            background:
+              "radial-gradient(circle, rgba(236,72,153,0.7) 0%, rgba(139,92,246,0.5) 40%, transparent 70%)",
+            width: "400px",
+            height: "400px",
+            transform: "translate(-45%, -45%)",
           }}
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.5, 0.9, 0.5],
+          }}
+          transition={{ duration: 3, repeat: Infinity }}
         />
-        
-        {/* Speed lines */}
-        <div className="absolute -left-20 top-1/2 -translate-y-1/2 space-y-2">
-          {[...Array(5)].map((_, i) => (
-            <div
+
+        {/* Speed Lines */}
+        {scrollProgress > 0.05 && (
+          <div className="absolute -left-40 top-1/2 -translate-y-1/2">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="h-1 bg-gradient-to-r from-cyan-400 via-purple-400 to-transparent mb-3"
+                style={{
+                  width: `${80 + i * 20}px`,
+                }}
+                animate={{
+                  opacity: [0.2, 1, 0.2],
+                  scaleX: [0.6, 1.4, 0.6],
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  delay: i * 0.08,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Spacecraft - Same design as loading screen */}
+        <svg
+          width="140"
+          height="70"
+          viewBox="0 0 120 60"
+          className="drop-shadow-2xl relative z-10"
+        >
+          {/* Main Hull */}
+          <path
+            d="M 20 30 L 100 15 L 110 30 L 100 45 L 20 30 Z"
+            fill="url(#spacecraft-gradient)"
+            stroke="#06b6d4"
+            strokeWidth="2"
+          />
+
+          {/* Cockpit Window */}
+          <ellipse cx="90" cy="30" rx="15" ry="12" fill="#1e40af" opacity="0.8" />
+          <ellipse cx="90" cy="30" rx="10" ry="8" fill="#3b82f6" opacity="0.6" />
+          <ellipse cx="92" cy="28" rx="5" ry="4" fill="#60a5fa" opacity="0.9" />
+
+          {/* Wings */}
+          <path d="M 40 30 L 35 15 L 50 28 Z" fill="#4f46e5" opacity="0.9" />
+          <path d="M 40 30 L 35 45 L 50 32 Z" fill="#4f46e5" opacity="0.9" />
+
+          {/* Engine Glow - Animated */}
+          <ellipse cx="22" cy="30" rx="10" ry="7" fill="#ec4899" opacity="0.8">
+            <animate
+              attributeName="rx"
+              values="8;14;8"
+              dur="0.6s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="opacity"
+              values="0.6;1;0.6"
+              dur="0.6s"
+              repeatCount="indefinite"
+            />
+          </ellipse>
+
+          {/* Detail Lines */}
+          <line x1="30" y1="30" x2="95" y2="30" stroke="#06b6d4" strokeWidth="1" opacity="0.5" />
+          <line x1="35" y1="25" x2="90" y2="20" stroke="#8b5cf6" strokeWidth="0.5" opacity="0.4" />
+          <line x1="35" y1="35" x2="90" y2="40" stroke="#8b5cf6" strokeWidth="0.5" opacity="0.4" />
+
+          <defs>
+            <linearGradient id="spacecraft-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#6366f1" />
+              <stop offset="50%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#06b6d4" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Engine Exhaust Trail */}
+        <motion.div
+          className="absolute right-full top-1/2 -translate-y-1/2 h-2"
+          style={{
+            background: "linear-gradient(to left, rgba(236, 72, 153, 0.9), rgba(139, 92, 246, 0.6), transparent)",
+          }}
+          animate={{
+            width: [120, 220, 120],
+            opacity: [0.7, 1, 0.7],
+          }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {/* Exhaust Particles */}
+        <div className="absolute right-full top-1/2 -translate-y-1/2">
+          {[...Array(4)].map((_, i) => (
+            <motion.div
               key={i}
-              className="h-0.5 bg-gradient-to-r from-cyan-400 to-transparent animate-pulse"
+              className="absolute w-2 h-2 rounded-full bg-orange-500"
               style={{
-                width: `${40 + i * 10}px`,
-                opacity: 0.3 + i * 0.1,
-                animationDelay: `${i * 0.1}s`,
+                left: `-${i * 20 + 10}px`,
+                top: `${(Math.random() - 0.5) * 10}px`,
+              }}
+              animate={{
+                x: [-10, -80],
+                opacity: [1, 0],
+                scale: [1, 0.3],
+              }}
+              transition={{
+                duration: 0.8,
+                repeat: Infinity,
+                delay: i * 0.2,
+                ease: "easeOut",
               }}
             />
           ))}
         </div>
 
-        {/* 3D Canvas */}
-        <div ref={containerRef} className="relative" />
-
-        {/* Label */}
-        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-          <div className="px-3 py-1 bg-cyan-500/20 backdrop-blur-sm border border-cyan-400/30 rounded-full">
-            <span className="text-xs font-bold text-cyan-300">EXPLORER-1</span>
+        {/* Mission Badge */}
+        <motion.div
+          className="absolute -bottom-14 left-1/2 -translate-x-1/2 whitespace-nowrap"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5, duration: 0.6 }}
+        >
+          <div className="relative">
+            {/* Corner decorations */}
+            <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-cyan-400" />
+            <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-cyan-400" />
+            <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-cyan-400" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-cyan-400" />
+            
+            <div className="px-5 py-2 bg-black/80 backdrop-blur-md border border-cyan-400/60 rounded">
+              <div className="text-xs font-bold text-cyan-300 tracking-wider mb-0.5">
+                EXPLORER-1
+              </div>
+              <div className="text-[9px] text-cyan-400/80 font-mono tracking-wide">
+                DEEP SPACE MISSION
+              </div>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
