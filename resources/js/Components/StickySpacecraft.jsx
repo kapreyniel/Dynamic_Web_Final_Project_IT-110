@@ -330,7 +330,7 @@ export default function StickySpacecraft() {
   return (
     <>
       {/* R3F Canvas with optimized settings */}
-      <div className="fixed top-0 left-0 w-full h-full z-50 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-full z-0 pointer-events-none">
         <Canvas
           shadows
           dpr={[1, 2]} // Device pixel ratio for performance
@@ -346,7 +346,7 @@ export default function StickySpacecraft() {
       </div>
 
       {/* Mission Badge - Tailwind CSS overlay */}
-      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-opacity duration-500">
+      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-opacity duration-500">
         <div className="relative opacity-90 animate-pulse">
           {/* Corner decorations - Tailwind borders */}
           <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-cyan-400 transition-all duration-300" />

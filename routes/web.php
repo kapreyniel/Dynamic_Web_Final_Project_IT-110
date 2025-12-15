@@ -14,21 +14,67 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
+    return Inertia::render('Landing', [
+        'auth' => [
+            'user' => auth()->user(),
+        ],
+    ]);
+})->name('landing');
+
+// Alias for /landing if user navigates directly to it
+Route::get('/landing', function () {
+    return Inertia::render('Landing', [
+        'auth' => [
+            'user' => auth()->user(),
+        ],
+    ]);
+});
+
+Route::get('/explore', function () {
+    // Always show loading screen flow from /explore route
+    // Pass user as null to trigger loading->auth flow
+    // Add timestamp to force re-render on every visit
+    return Inertia::render('Home', [
+        'auth' => [
+            'user' => null,
+        ],
+        'forceLoading' => true, // Flag to always show loading
+        'timestamp' => time(), // Force fresh state on every request
+    ]);
+})->name('explore');
+
+Route::get('/home', function () {
     return Inertia::render('Home', [
         'auth' => [
             'user' => auth()->user(),
         ],
     ]);
-})->name('home');
+})->middleware('auth')->name('home');
 
 // Authentication Routes
+Route::get('/login', function () {
+    return Inertia::render('AuthPage', [
+        'auth' => [
+            'user' => auth()->user(),
+        ],
+    ]);
+})->name('login');
+
+Route::get('/register', function () {
+    return Inertia::render('AuthPage', [
+        'auth' => [
+            'user' => auth()->user(),
+        ],
+    ]);
+})->name('register');
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
 // Google OAuth Routes
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
-Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+Route::get('/auth/callback/google', [AuthController::class, 'handleGoogleCallback']);
 
 // NASA API Routes
 Route::prefix('api')->group(function () {

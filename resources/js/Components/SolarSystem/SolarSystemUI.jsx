@@ -14,7 +14,7 @@ export default function SolarSystemUI({
   return (
     <>
       {/* Progress Bar */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-50">
         <div className="bg-white/10 backdrop-blur-sm rounded-full h-2 overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-cosmic-purple to-cosmic-pink"
@@ -26,7 +26,7 @@ export default function SolarSystemUI({
       </div>
 
       {/* Current Planet Name */}
-      <div className="absolute top-12 left-1/2 -translate-x-1/2">
+      <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50">
         <motion.div
           key={currentExhibit.name}
           initial={{ opacity: 0, y: -20 }}
@@ -40,7 +40,7 @@ export default function SolarSystemUI({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 z-50">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -71,7 +71,7 @@ export default function SolarSystemUI({
             initial={{ opacity: 0, x: 300 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 300 }}
-            className="absolute top-24 right-4 max-w-md"
+            className="absolute top-24 right-4 max-w-md z-50"
           >
             <div className="bg-gradient-to-br from-gray-900/95 via-purple-900/95 to-gray-900/95 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-2xl">
               <div className="flex justify-between items-start mb-4">
@@ -94,7 +94,7 @@ export default function SolarSystemUI({
       </AnimatePresence>
 
       {/* Instructions */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.7 }}

@@ -79,15 +79,36 @@ export default function GallerySection({
     );
   }
 
-  // Check if we have data
-  if (!apodData || apodData.length === 0) {
+  // Check if we have data - handle both empty array and undefined
+  const hasValidData =
+    apodData && Array.isArray(apodData) && apodData.length > 0;
+
+  if (!hasValidData) {
     return (
       <section id="gallery" className="relative py-32">
         <div className="container mx-auto px-6">
-          <div className="text-center">
-            <p className="text-white/70">
-              No images available. Please check your NASA API connection.
-            </p>
+          <div className="text-center max-w-2xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-8"
+            >
+              <div className="text-6xl mb-4">🔭</div>
+              <h3 className="text-2xl font-bold mb-4 gradient-text">
+                Loading Gallery Images
+              </h3>
+              <p className="text-white/70 mb-4">
+                {apodData === null || apodData === undefined
+                  ? "Fetching images from NASA's Astronomy Picture of the Day..."
+                  : "Unable to load images at the moment. Please refresh the page or try again later."}
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-2 bg-gradient-to-r from-cosmic-purple to-cosmic-pink rounded-lg font-semibold hover:shadow-lg hover:shadow-cosmic-purple/50 transition-all"
+              >
+                Refresh Page
+              </button>
+            </motion.div>
           </div>
         </div>
       </section>

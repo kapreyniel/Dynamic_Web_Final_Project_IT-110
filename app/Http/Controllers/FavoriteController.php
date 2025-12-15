@@ -12,11 +12,18 @@ class FavoriteController extends Controller
      */
     public function index(Request $request)
     {
-        $sessionId = $request->session()->getId();
-        
-        $favorites = Favorite::where('session_id', $sessionId)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Use user_id for authenticated users, session_id for guests
+        if (auth()->check()) {
+            $favorites = Favorite::where('user_id', auth()->id())
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $sessionId = $request->session()->getId();
+            $favorites = Favorite::where('session_id', $sessionId)
+                ->whereNull('user_id')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
 
         return response()->json($favorites);
     }
@@ -35,13 +42,21 @@ class FavoriteController extends Controller
             'metadata' => 'nullable|json',
         ]);
 
+        // Use user_id for authenticated users, session_id for guests
+        $userId = auth()->check() ? auth()->id() : null;
         $sessionId = $request->session()->getId();
 
         // Check if already favorited
-        $existing = Favorite::where('session_id', $sessionId)
-            ->where('item_type', $validated['item_type'])
-            ->where('item_id', $validated['item_id'])
-            ->first();
+        $query = Favorite::where('item_type', $validated['item_type'])
+            ->where('item_id', $validated['item_id']);
+        
+        if ($userId) {
+            $query->where('user_id', $userId);
+        } else {
+            $query->where('session_id', $sessionId)->whereNull('user_id');
+        }
+        
+        $existing = $query->first();
 
         if ($existing) {
             return response()->json([
@@ -51,6 +66,7 @@ class FavoriteController extends Controller
         }
 
         $favorite = Favorite::create([
+            'user_id' => $userId,
             'session_id' => $sessionId,
             'item_type' => $validated['item_type'],
             'item_id' => $validated['item_id'],
@@ -71,11 +87,18 @@ class FavoriteController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $sessionId = $request->session()->getId();
-        
-        $favorite = Favorite::where('session_id', $sessionId)
-            ->where('id', $id)
-            ->first();
+        // Use user_id for authenticated users, session_id for guests
+        if (auth()->check()) {
+            $favorite = Favorite::where('user_id', auth()->id())
+                ->where('id', $id)
+                ->first();
+        } else {
+            $sessionId = $request->session()->getId();
+            $favorite = Favorite::where('session_id', $sessionId)
+                ->whereNull('user_id')
+                ->where('id', $id)
+                ->first();
+        }
 
         if (!$favorite) {
             return response()->json(['message' => 'Favorite not found'], 404);

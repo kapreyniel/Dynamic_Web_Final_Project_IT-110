@@ -13,41 +13,61 @@ const appName = import.meta.env.VITE_APP_NAME || "Beyond Earth";
 
 // App wrapper to handle loading -> auth -> main app flow
 function AppWrapper({ App, props }) {
-  const [showLoading, setShowLoading] = useState(true);
+  const currentPage = props?.initialPage?.component;
+  const isLandingPage = currentPage === "Landing";
+  const isHomePage = currentPage === "Home";
+  const serverUser = props?.initialPage?.props?.auth?.user;
+  const forceLoading = props?.initialPage?.props?.forceLoading;
+
+  // Determine initial state based on page and authentication
+  const [showLoading, setShowLoading] = useState(() => {
+    // Always show loading if forceLoading flag is set (from /explore)
+    if (isHomePage && forceLoading) {
+      return true;
+    }
+    // Show loading only when on Home page and not authenticated
+    return isHomePage && !serverUser;
+  });
   const [showAuth, setShowAuth] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!serverUser);
+  const [user, setUser] = useState(serverUser || null);
 
   useEffect(() => {
-    // Check if user is authenticated from server (via Inertia props)
-    const serverUser = props?.initialPage?.props?.auth?.user;
+    // If forceLoading is set (from /explore), ALWAYS reset and show loading->auth flow
+    if (forceLoading) {
+      // Clear all auth state
+      localStorage.removeItem("user");
+      localStorage.removeItem("authenticated");
+      setUser(null);
+      setIsAuthenticated(false);
+      setShowAuth(false);
+      setShowLoading(true);
 
+      // Force component re-mount by updating key
+      return;
+    }
+
+    // Sync with server authentication state
     if (serverUser) {
       setUser(serverUser);
       setIsAuthenticated(true);
-      setShowLoading(true);
+      setShowLoading(false);
       setShowAuth(false);
       // Store in localStorage for client-side consistency
       localStorage.setItem("user", JSON.stringify(serverUser));
       localStorage.setItem("authenticated", "true");
-    } else {
-      // Check localStorage as fallback
-      const storedAuth = localStorage.getItem("authenticated");
-      const storedUser = localStorage.getItem("user");
-
-      if (storedAuth === "true" && storedUser) {
-        setUser(JSON.parse(storedUser));
-        setIsAuthenticated(true);
-        setShowLoading(true);
-        setShowAuth(false);
-      }
+    } else if (isHomePage) {
+      // Not authenticated on Home page - this should trigger loading flow
+      localStorage.removeItem("user");
+      localStorage.removeItem("authenticated");
+      setIsAuthenticated(false);
+      setShowLoading(true);
     }
-  }, [props]);
+  }, [serverUser, isHomePage, forceLoading]);
 
   const handleLoadingComplete = () => {
     setShowLoading(false);
-
-    // If not authenticated, show auth page
+    // Always show auth if not authenticated
     if (!isAuthenticated) {
       setShowAuth(true);
     }
@@ -57,7 +77,18 @@ function AppWrapper({ App, props }) {
     setUser(userData);
     setIsAuthenticated(true);
     setShowAuth(false);
+    // window.location.href in AuthPage will handle full page navigation
   };
+
+  // Landing page - no authentication required
+  if (isLandingPage) {
+    return <App key="app" {...props} />;
+  }
+
+  // Authenticated users on /home - go directly to app
+  if (isAuthenticated && serverUser) {
+    return <App key="app" {...props} />;
+  }
 
   // Smooth cinematic transitions between screens
   return (

@@ -12,7 +12,7 @@ export default function Layout({ children }) {
 
       {/* Main Content - Delayed to allow spacecraft landing animation */}
       <motion.div
-        className="relative z-10"
+        className="relative z-30 pointer-events-auto"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, delay: 1 }} // 1s delay for spacecraft landing

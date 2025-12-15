@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
@@ -92,39 +93,68 @@ class AuthController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
+            
+            // Get the avatar URL from Google - try multiple methods to ensure we get it
+            $avatar = null;
+            
+            // Method 1: Try avatar property directly
+            if (!empty($googleUser->avatar)) {
+                $avatar = $googleUser->avatar;
+            }
+            // Method 2: Try getAvatar method
+            elseif (method_exists($googleUser, 'getAvatar')) {
+                $avatar = $googleUser->getAvatar();
+            }
+            
+            // Log for debugging
+            Log::info('Google User Data', [
+                'id' => $googleUser->getId(),
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'avatar' => $avatar,
+            ]);
 
-            // Find or create user
-            $user = User::where('google_id', $googleUser->getId())
-                ->orWhere('email', $googleUser->getEmail())
-                ->first();
+            // Find or create user by google_id first (most reliable)
+            $user = User::where('google_id', $googleUser->getId())->first();
 
             if (!$user) {
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'avatar' => $googleUser->getAvatar(),
-                    'password' => Hash::make(Str::random(24)),
-                ]);
-            } else {
-                // Update google_id if user exists but doesn't have it
-                if (!$user->google_id) {
+                // Try to find by email
+                $user = User::where('email', $googleUser->getEmail())->first();
+
+                if ($user) {
+                    // User exists with same email, just link Google account
                     $user->update([
                         'google_id' => $googleUser->getId(),
-                        'avatar' => $googleUser->getAvatar(),
+                        'avatar' => $avatar,
+                    ]);
+                } else {
+                    // Create new user
+                    $user = User::create([
+                        'name' => $googleUser->getName(),
+                        'email' => $googleUser->getEmail(),
+                        'google_id' => $googleUser->getId(),
+                        'avatar' => $avatar,
+                        'password' => Hash::make(Str::random(24)),
                     ]);
                 }
+            } else {
+                // User exists with google_id, just update avatar in case it changed
+                $user->update([
+                    'avatar' => $avatar,
+                ]);
             }
 
             Auth::login($user);
-            $request = request();
-            $request->session()->regenerate();
+            request()->session()->regenerate();
 
             // Redirect to home page
-            return redirect('/');
+            return redirect('/home')->with('success', 'Successfully logged in with Google!');
 
         } catch (\Exception $e) {
-            return redirect('/')->with('error', 'Google authentication failed: ' . $e->getMessage());
+            Log::error('Google OAuth Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return redirect('/explore')->with('error', 'Google authentication failed. Please try again.');
         }
     }
 }

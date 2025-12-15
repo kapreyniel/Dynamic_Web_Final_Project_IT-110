@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePage } from "@inertiajs/react";
 import {
   FaRocket,
   FaSignOutAlt,
@@ -12,6 +13,7 @@ import {
 import axios from "axios";
 
 export default function Navbar() {
+  const { props } = usePage();
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -23,10 +25,19 @@ export default function Navbar() {
       setScrolled(window.scrollY > 50);
     };
 
-    // Check if user is logged in
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    // Get user from Inertia props (passed from backend)
+    const authenticatedUser = props?.auth?.user;
+    if (authenticatedUser) {
+      setUser(authenticatedUser);
+      // Also store in localStorage for persistence
+      localStorage.setItem("user", JSON.stringify(authenticatedUser));
+      localStorage.setItem("authenticated", "true");
+    } else {
+      // Fallback to localStorage if not in props
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
 
     // Close dropdown when clicking outside
@@ -43,7 +54,7 @@ export default function Navbar() {
       window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [props?.auth?.user]);
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
@@ -99,15 +110,21 @@ export default function Navbar() {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            {["Story", "Gallery", "Mars", "Earth", "Favorites"].map((item) => (
+            {[
+              { label: "Story", id: "story" },
+              { label: "Gallery", id: "gallery" },
+              { label: "Solar System", id: "earth" },
+              { label: "Mars", id: "mars" },
+              { label: "Favorites", id: "favorites" },
+            ].map((item) => (
               <motion.button
-                key={item}
+                key={item.label}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => scrollToSection(item.toLowerCase())}
+                onClick={() => scrollToSection(item.id)}
                 className="text-white/80 hover:text-white font-medium transition-colors"
               >
-                {item}
+                {item.label}
               </motion.button>
             ))}
 

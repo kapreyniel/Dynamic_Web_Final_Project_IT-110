@@ -15,6 +15,30 @@ export default function FavoritesSection({
     setLoading(false);
   }, [favoritesFull, refreshTrigger]);
 
+  const addFavorite = async (imageData) => {
+    try {
+      const response = await axios.post("/favorites", {
+        item_type: imageData.type || "apod", // Type of image (apod, mars, epic)
+        item_id: imageData.date || imageData.id || new Date().toISOString(), // Unique identifier
+        title: imageData.title,
+        description: imageData.description || imageData.explanation,
+        image_url: imageData.url || imageData.hdurl,
+        metadata: JSON.stringify({
+          date: imageData.date,
+          copyright: imageData.copyright,
+          mediaType: imageData.media_type,
+        }),
+      });
+
+      // Add the new favorite to the list
+      setFavoritesFull((prev) => [response.data.favorite, ...prev]);
+      return response.data.favorite;
+    } catch (error) {
+      console.error("Error adding favorite:", error);
+      throw error;
+    }
+  };
+
   const removeFavorite = async (id) => {
     try {
       await axios.delete(`/favorites/${id}`);

@@ -5,14 +5,14 @@ import Layout from "../Components/Layout";
 import Hero from "../Components/Hero";
 import StoryTimeline from "../Components/StoryTimeline";
 import GallerySection from "../Components/GallerySection";
-import MarsJourney from "../Components/MarsJourney";
 import InteractiveEarth from "../Components/InteractiveEarth";
+import InteractiveMars from "../Components/InteractiveMars";
 import FavoritesSection from "../Components/FavoritesSection";
 import FeedbackSection from "../Components/FeedbackSection";
 import CallToAction from "../Components/CallToAction";
 import StickySpacecraft from "../Components/StickySpacecraft";
 
-export default function Home() {
+export default function Home({ auth }) {
   const [apodData, setApodData] = useState([]);
   const [marsPhotos, setMarsPhotos] = useState([]);
   const [epicImages, setEpicImages] = useState([]);
@@ -24,8 +24,11 @@ export default function Home() {
 
   useEffect(() => {
     fetchNasaData();
-    fetchFavorites();
-  }, []);
+    // Fetch favorites whenever component mounts or user changes
+    if (auth?.user) {
+      fetchFavorites();
+    }
+  }, [auth?.user?.id]);
 
   const fetchFavorites = async () => {
     try {
@@ -49,7 +52,7 @@ export default function Home() {
       // Fetch all NASA data in parallel
       console.log("Fetching NASA data...");
       const [apodResponse, marsResponse, epicResponse] = await Promise.all([
-        axios.get("/api/nasa/apod?count=5"),
+        axios.get("/api/nasa/apod?count=6"),
         axios.get("/api/nasa/mars-photos?sol=1000"),
         axios.get("/api/nasa/epic"),
       ]);
@@ -64,6 +67,11 @@ export default function Home() {
     } catch (error) {
       console.error("Error fetching NASA data:", error);
       console.error("Error details:", error.response?.data || error.message);
+
+      // Show user-friendly error message
+      alert(
+        "Unable to connect to NASA API. Please check your internet connection or try again later."
+      );
     } finally {
       setLoading(false);
     }
@@ -91,11 +99,11 @@ export default function Home() {
         onAddFavorite={(fav) => setFavoritesFull((prev) => [fav, ...prev])}
       />
 
-      {/* Mars Journey - Red Planet Exploration */}
-      <MarsJourney marsPhotos={marsPhotos} loading={loading} />
-
       {/* Interactive Earth - 3D Experience */}
       <InteractiveEarth epicImages={epicImages} loading={loading} />
+
+      {/* Interactive Mars - 3D Red Planet */}
+      <InteractiveMars />
 
       {/* Favorites Section - User Engagement */}
       <FavoritesSection

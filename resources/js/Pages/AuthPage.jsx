@@ -1,11 +1,48 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUser, FaLock, FaEnvelope, FaRocket, FaGoogle } from "react-icons/fa";
 import axios from "axios";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { PerspectiveCamera, Float } from "@react-three/drei";
+import {
+  PerspectiveCamera,
+  Float,
+  Sphere,
+  MeshDistortMaterial,
+  Stars as DreiStars,
+  Cloud,
+} from "@react-three/drei";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { gsap } from "gsap";
+import { router } from "@inertiajs/react";
 import * as THREE from "three";
+import { useLoader } from "@react-three/fiber";
+
+// 3D Moon Model Component
+function MoonModel() {
+  const moonRef = useRef();
+  const gltf = useLoader(GLTFLoader, "/models/moon.glb");
+
+  useFrame((state) => {
+    if (moonRef.current) {
+      // Slow rotation
+      moonRef.current.rotation.y += 0.003;
+
+      // Gentle floating motion
+      const time = state.clock.elapsedTime;
+      moonRef.current.position.y = Math.sin(time * 0.5) * 0.3;
+      moonRef.current.position.x = 3 + Math.cos(time * 0.3) * 0.5;
+    }
+  });
+
+  return (
+    <primitive
+      ref={moonRef}
+      object={gltf.scene}
+      scale={1.5}
+      position={[3, 0, -2]}
+    />
+  );
+}
 
 // 3D Spacecraft for Auth Page - Continues journey from LoadingScreen
 function AuthSpacecraft() {
@@ -176,6 +213,9 @@ export default function AuthPage({ onAuthSuccess }) {
         if (onAuthSuccess) {
           onAuthSuccess(response.data.user || { email: formData.email });
         }
+
+        // Redirect to home after successful authentication - use full page reload
+        window.location.href = "/home";
       }
     } catch (err) {
       console.error("Auth error:", err);
@@ -201,7 +241,7 @@ export default function AuthPage({ onAuthSuccess }) {
       transition={{ duration: 0.8, ease: "easeInOut" }}
     >
       {/* 3D Spacecraft Canvas - Continuous Journey */}
-      <div className="absolute inset-0 z-30 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <Canvas shadows dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
           <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={60} />
           <ambientLight intensity={0.3} color="#e0f2fe" />
@@ -214,11 +254,12 @@ export default function AuthPage({ onAuthSuccess }) {
           <pointLight position={[-5, 0, 0]} color="#8b5cf6" intensity={0.5} />
           <pointLight position={[5, 0, 0]} color="#06b6d4" intensity={0.5} />
           <AuthSpacecraft />
+          <MoonModel />
         </Canvas>
       </div>
 
       {/* Animated background stars */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         {[...Array(150)].map((_, i) => (
           <motion.div
             key={i}
@@ -240,108 +281,8 @@ export default function AuthPage({ onAuthSuccess }) {
         ))}
       </div>
 
-      {/* Animated Planet Background */}
       <motion.div
-        className="absolute right-0 top-0 w-[600px] h-[600px] -translate-y-1/4 translate-x-1/4 z-10"
-        initial={{ scale: 3, opacity: 0 }}
-        animate={{
-          scale: 1,
-          opacity: 0.5,
-          rotate: 360,
-        }}
-        transition={{
-          scale: { duration: 1.5, ease: "easeOut" },
-          opacity: { duration: 1.2 },
-          rotate: { duration: 100, repeat: Infinity, ease: "linear" },
-        }}
-      >
-        <div className="relative w-full h-full">
-          {/* Planet Core Glow */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-400 via-purple-500 to-pink-500 blur-3xl opacity-80" />
-
-          {/* Planet Surface */}
-          <div className="absolute inset-12 rounded-full bg-gradient-to-br from-orange-400 via-red-500 to-purple-700 overflow-hidden shadow-2xl">
-            {/* Atmosphere Glow */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-300/50 via-transparent to-transparent" />
-
-            {/* Surface Details */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-            >
-              {[...Array(12)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute rounded-full bg-red-900/50"
-                  style={{
-                    width: `${Math.random() * 40 + 15}%`,
-                    height: `${Math.random() * 40 + 15}%`,
-                    left: `${Math.random() * 60}%`,
-                    top: `${Math.random() * 60}%`,
-                  }}
-                />
-              ))}
-            </motion.div>
-
-            {/* Cloud Layer */}
-            <motion.div
-              className="absolute inset-0 rounded-full"
-              animate={{ rotate: -360 }}
-              transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-            >
-              {[...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute rounded-full bg-white/10 blur-sm"
-                  style={{
-                    width: `${Math.random() * 30 + 20}%`,
-                    height: `${Math.random() * 20 + 10}%`,
-                    left: `${Math.random() * 70}%`,
-                    top: `${Math.random() * 70}%`,
-                  }}
-                />
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Planetary Rings */}
-          <div
-            className="absolute inset-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{
-              transform: "translateX(-50%) translateY(-50%) rotateX(75deg)",
-              transformStyle: "preserve-3d",
-            }}
-          >
-            <div className="w-full h-full rounded-full border-8 border-purple-400/30 blur-sm" />
-            <div className="absolute inset-8 rounded-full border-6 border-pink-400/20 blur-sm" />
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Smaller orbiting moon/asteroid */}
-      <motion.div
-        className="absolute w-32 h-32 rounded-full bg-gradient-to-br from-gray-300 via-gray-500 to-gray-700 opacity-40 z-10"
-        style={{
-          right: "15%",
-          top: "25%",
-        }}
-        animate={{
-          y: [0, -30, 0],
-          x: [0, 20, 0],
-          rotate: 360,
-        }}
-        transition={{
-          y: { duration: 8, repeat: Infinity, ease: "easeInOut" },
-          x: { duration: 8, repeat: Infinity, ease: "easeInOut" },
-          rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-        }}
-      >
-        <div className="absolute inset-2 rounded-full bg-gradient-to-br from-gray-400 to-gray-800" />
-      </motion.div>
-
-      <motion.div
-        className="relative z-20 min-h-screen flex items-center justify-center p-6"
+        className="relative z-50 min-h-screen flex items-center justify-center p-6 pointer-events-auto"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
