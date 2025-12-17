@@ -108,29 +108,29 @@ export default function InteractiveMars() {
   return (
     <section
       id="mars"
-      className="relative min-h-screen bg-gradient-to-b from-black via-red-950/20 to-black py-20 overflow-hidden"
+      className="relative min-h-screen bg-gradient-to-b from-black via-red-950/20 to-black py-12 md:py-20 overflow-hidden"
     >
       {/* Background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,68,68,0.1)_0%,_transparent_70%)]" />
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-3 sm:px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-8 md:mb-12"
         >
-          <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 md:mb-4">
             Explore <span className="text-red-500">Mars</span>
           </h2>
-          <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
+          <p className="text-gray-400 text-sm sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto px-2">
             Interact with the Red Planet in 3D. Click and drag to rotate, scroll
             to zoom.
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 items-center">
           {/* 3D Mars Canvas */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -140,8 +140,12 @@ export default function InteractiveMars() {
             className="relative"
           >
             <div
-              className="relative rounded-2xl overflow-hidden shadow-2xl"
-              style={{ height: "600px" }}
+              className="relative rounded-lg sm:rounded-2xl overflow-hidden shadow-2xl"
+              style={{
+                height: "300px",
+                minHeight: "300px",
+                maxHeight: "600px",
+              }}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
@@ -159,12 +163,15 @@ export default function InteractiveMars() {
               <motion.div
                 initial={{ opacity: 1 }}
                 animate={{ opacity: isHovered ? 0 : 1 }}
-                className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20"
+                className="absolute bottom-3 sm:bottom-6 left-1/2 transform -translate-x-1/2 z-20 px-2"
               >
-                <div className="bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-6 py-3">
-                  <p className="text-white text-sm font-medium flex items-center gap-2">
+                <div className="bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-full px-4 sm:px-6 py-2 sm:py-3">
+                  <p className="text-white text-xs sm:text-sm font-medium flex items-center gap-2">
                     <span className="animate-pulse">👆</span>
-                    Click and drag to explore
+                    <span className="hidden sm:inline">
+                      Click and drag to explore
+                    </span>
+                    <span className="sm:hidden">Tap to explore</span>
                   </p>
                 </div>
               </motion.div>
@@ -179,13 +186,13 @@ export default function InteractiveMars() {
             viewport={{ once: true }}
             className="space-y-6"
           >
-            <div className="bg-gradient-to-br from-red-950/30 to-black/50 backdrop-blur-sm border border-red-500/20 rounded-2xl p-8">
-              <h3 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-                <span className="text-4xl">🔴</span>
-                Mars Facts
+            <div className="bg-gradient-to-br from-red-950/30 to-black/50 backdrop-blur-sm border border-red-500/20 rounded-lg sm:rounded-2xl p-4 sm:p-6 md:p-8">
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 flex items-center gap-3">
+                <span className="text-3xl sm:text-4xl">🔴</span>
+                <span>Mars Facts</span>
               </h3>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {facts.map((fact, index) => (
                   <motion.div
                     key={index}
@@ -193,17 +200,17 @@ export default function InteractiveMars() {
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                    className="bg-black/30 border border-red-500/20 rounded-xl p-4 hover:bg-red-950/20 hover:border-red-500/40 transition-all duration-300"
+                    className="bg-black/30 border border-red-500/20 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:bg-red-950/20 hover:border-red-500/40 transition-all duration-300"
                   >
-                    <div className="flex items-start gap-4">
-                      <span className="text-3xl flex-shrink-0">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <span className="text-2xl sm:text-3xl flex-shrink-0">
                         {fact.icon}
                       </span>
-                      <div>
-                        <h4 className="text-white font-semibold text-lg mb-1">
+                      <div className="min-w-0">
+                        <h4 className="text-white font-semibold text-sm sm:text-lg mb-1">
                           {fact.title}
                         </h4>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-gray-400 text-xs sm:text-sm">
                           {fact.description}
                         </p>
                       </div>
@@ -213,28 +220,38 @@ export default function InteractiveMars() {
               </div>
 
               {/* Mars Stats */}
-              <div className="mt-8 grid grid-cols-2 gap-4">
-                <div className="bg-black/40 border border-red-500/20 rounded-lg p-4 text-center">
-                  <div className="text-red-400 text-2xl font-bold">
+              <div className="mt-6 sm:mt-8 grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="bg-black/40 border border-red-500/20 rounded-lg p-2 sm:p-4 text-center">
+                  <div className="text-red-400 text-sm sm:text-2xl font-bold">
                     227.9M km
                   </div>
-                  <div className="text-gray-400 text-sm mt-1">From Sun</div>
+                  <div className="text-gray-400 text-xs sm:text-sm mt-1">
+                    From Sun
+                  </div>
                 </div>
-                <div className="bg-black/40 border border-red-500/20 rounded-lg p-4 text-center">
-                  <div className="text-red-400 text-2xl font-bold">
+                <div className="bg-black/40 border border-red-500/20 rounded-lg p-2 sm:p-4 text-center">
+                  <div className="text-red-400 text-sm sm:text-2xl font-bold">
                     687 days
                   </div>
-                  <div className="text-gray-400 text-sm mt-1">Orbit Period</div>
+                  <div className="text-gray-400 text-xs sm:text-sm mt-1">
+                    Orbit Period
+                  </div>
                 </div>
-                <div className="bg-black/40 border border-red-500/20 rounded-lg p-4 text-center">
-                  <div className="text-red-400 text-2xl font-bold">-63°C</div>
-                  <div className="text-gray-400 text-sm mt-1">Avg Temp</div>
+                <div className="bg-black/40 border border-red-500/20 rounded-lg p-2 sm:p-4 text-center">
+                  <div className="text-red-400 text-sm sm:text-2xl font-bold">
+                    -63°C
+                  </div>
+                  <div className="text-gray-400 text-xs sm:text-sm mt-1">
+                    Avg Temp
+                  </div>
                 </div>
-                <div className="bg-black/40 border border-red-500/20 rounded-lg p-4 text-center">
-                  <div className="text-red-400 text-2xl font-bold">
+                <div className="bg-black/40 border border-red-500/20 rounded-lg p-2 sm:p-4 text-center">
+                  <div className="text-red-400 text-sm sm:text-2xl font-bold">
                     6,779 km
                   </div>
-                  <div className="text-gray-400 text-sm mt-1">Diameter</div>
+                  <div className="text-gray-400 text-xs sm:text-sm mt-1">
+                    Diameter
+                  </div>
                 </div>
               </div>
             </div>

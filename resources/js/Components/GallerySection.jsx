@@ -9,10 +9,12 @@ export default function GallerySection({
   onFavoriteAdded,
   favoriteIds = [],
   onAddFavorite = () => {},
+  onLoadMore = () => {},
 }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [savingFavorite, setSavingFavorite] = useState(null);
   const [localFavoritedIds, setLocalFavoritedIds] = useState(favoriteIds || []);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     setLocalFavoritedIds(favoriteIds || []);
@@ -66,6 +68,18 @@ export default function GallerySection({
 
   const isFavorited = (date) => localFavoritedIds.includes(date);
 
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    try {
+      await onLoadMore();
+    } catch (error) {
+      console.error("Error loading more images:", error);
+      alert("Failed to load more images. Please try again.");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   if (loading) {
     return (
       <section id="gallery" className="relative py-32">
@@ -118,28 +132,41 @@ export default function GallerySection({
   return (
     <section
       id="gallery"
-      className="relative py-32 bg-gradient-to-b from-space-dark to-black/50"
+      className="relative py-32 bg-gradient-to-b from-space-dark to-black/50 overflow-hidden"
     >
-      <div className="container mx-auto px-6">
-        {/* Section Header */}
+      {/* Cosmic Background with Stardust Fall Animation */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cosmic-pink/10 rounded-full filter blur-3xl animate-nebula-swirl" />
+        <div
+          className="absolute bottom-0 right-1/4 w-96 h-96 bg-cosmic-blue/10 rounded-full filter blur-3xl animate-nebula-swirl"
+          style={{ animationDelay: "4s" }}
+        />
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Section Header with Star Twinkle */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          className="text-center mb-20 animate-aurora-wave"
         >
-          <h2 className="text-5xl md:text-6xl font-display font-bold mb-6 gradient-text">
+          <h2 className="text-5xl md:text-6xl font-display font-bold mb-6 gradient-text animate-glow-pulse">
             Cosmic Gallery
           </h2>
-          <p className="text-xl text-white/70 max-w-3xl mx-auto">
+          <p className="text-xl text-white/70 max-w-3xl mx-auto animate-cosmic-drift">
             A curated collection of breathtaking images from across the
             universe, captured by NASA's most advanced instruments.
           </p>
         </motion.div>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 ${
+            loadingMore ? "opacity-50 pointer-events-none" : ""
+          }`}
+        >
           {apodData.map((item, index) => (
             <motion.div
               key={item.date}
@@ -148,7 +175,7 @@ export default function GallerySection({
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               whileHover={{ y: -10 }}
-              className="glass-card overflow-hidden cursor-pointer group"
+              className="glass-card overflow-hidden cursor-pointer group animate-glow-pulse hover:animate-planet-pulse"
             >
               {/* Image */}
               <div
@@ -215,6 +242,46 @@ export default function GallerySection({
             </motion.div>
           ))}
         </div>
+
+        {/* See More Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="flex justify-center relative"
+        >
+          {loadingMore && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 flex items-center justify-center rounded-lg"
+            >
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-4 border-cosmic-purple border-t-transparent rounded-full animate-spin" />
+                <p className="text-white text-sm font-semibold">
+                  Refreshing Gallery...
+                </p>
+              </div>
+            </motion.div>
+          )}
+          <motion.button
+            whileHover={{ scale: loadingMore ? 1 : 1.05 }}
+            whileTap={{ scale: loadingMore ? 1 : 0.95 }}
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="px-8 py-3 bg-gradient-to-r from-cosmic-purple to-cosmic-pink rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-cosmic-purple/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {loadingMore ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Loading...</span>
+              </>
+            ) : (
+              <span>🔭 See More</span>
+            )}
+          </motion.button>
+        </motion.div>
       </div>
 
       {/* Modal */}

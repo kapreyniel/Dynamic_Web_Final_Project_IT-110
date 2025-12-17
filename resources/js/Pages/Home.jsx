@@ -77,6 +77,20 @@ export default function Home({ auth }) {
     }
   };
 
+  // Function to load more APOD images (replaces current gallery)
+  const handleLoadMoreImages = async () => {
+    try {
+      // Add nocache parameter to bypass cache and get fresh images
+      const response = await axios.get("/api/nasa/apod?count=6&nocache=true");
+      console.log("New APOD Data:", response.data);
+      // Replace the current gallery with new images
+      setApodData(response.data);
+    } catch (error) {
+      console.error("Error loading more APOD images:", error);
+      throw error;
+    }
+  };
+
   return (
     <Layout>
       <Head title="Beyond Earth - Journey Through Space" />
@@ -97,6 +111,7 @@ export default function Home({ auth }) {
         onFavoriteAdded={refreshFavorites}
         favoriteIds={favoriteIds}
         onAddFavorite={(fav) => setFavoritesFull((prev) => [fav, ...prev])}
+        onLoadMore={handleLoadMoreImages}
       />
 
       {/* Interactive Earth - 3D Experience */}

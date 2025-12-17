@@ -21,7 +21,13 @@ class NasaController extends Controller
     public function getAstronomyPictureOfDay(Request $request)
     {
         $count = $request->query('count', 5);
+        $nocache = $request->query('nocache', false);
         $cacheKey = "nasa_apod_{$count}";
+
+        // Skip cache if nocache parameter is present
+        if ($nocache) {
+            return response()->json($this->nasaService->getAstronomyPictureOfDay($count));
+        }
 
         $data = Cache::remember($cacheKey, 3600, function () use ($count) {
             return $this->nasaService->getAstronomyPictureOfDay($count);

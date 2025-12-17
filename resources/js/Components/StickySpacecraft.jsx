@@ -68,9 +68,10 @@ function SpacecraftModel({ scrollProgress }) {
 
     const scroll = scrollProgress;
 
-    // GSAP-style easing applied to positions
-    const easeOutQuad = (t) => t * (2 - t);
-    const easedScroll = easeOutQuad(scroll);
+    // GSAP-style easing applied to positions - smooth cubic easing
+    const easeInOutCubic = (t) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const easedScroll = easeInOutCubic(scroll);
 
     // Cinematic horizontal S-curve path - wider range for dramatic effect
     groupRef.current.position.x = Math.sin(scroll * Math.PI * 2) * 2.5;
@@ -78,10 +79,10 @@ function SpacecraftModel({ scrollProgress }) {
     // Vertical descent with smooth easing - deeper travel
     groupRef.current.position.y = -easedScroll * 4 + 1;
 
-    // Cinematic continuous rotation with barrel rolls
-    groupRef.current.rotation.y = scroll * Math.PI * 5; // More rotation
-    groupRef.current.rotation.z = Math.sin(scroll * Math.PI * 2) * 0.4;
-    groupRef.current.rotation.x = Math.cos(scroll * Math.PI * 3) * 0.2; // Added pitch
+    // Cinematic continuous rotation with barrel rolls - smoother transitions
+    groupRef.current.rotation.y = scroll * Math.PI * 4; // Smoother rotation
+    groupRef.current.rotation.z = Math.sin(scroll * Math.PI * 2) * 0.3;
+    groupRef.current.rotation.x = Math.cos(scroll * Math.PI * 2.5) * 0.15; // Smoother pitch
 
     // Dynamic scale - grows and shrinks for depth perception
     const pulseScale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.05;
@@ -95,7 +96,7 @@ function SpacecraftModel({ scrollProgress }) {
       <group ref={groupRef}>
         {/* Main Hull - Futuristic shape with Tailwind indigo colors */}
         <mesh position={[0, 0, 0]} ref={meshRef} castShadow receiveShadow>
-          <coneGeometry args={[0.3, 1.2, 4]} />
+          <coneGeometry args={[0.3, 1.2, 16]} />
           <meshStandardMaterial
             color="#6366f1" // Tailwind indigo-500
             metalness={0.8}
@@ -173,7 +174,7 @@ function SpacecraftModel({ scrollProgress }) {
         {/* Exhaust Trail Particles with Tailwind orange - extended for motion blur effect */}
         {[...Array(8)].map((_, i) => (
           <mesh key={i} position={[0, -0.8 - i * 0.15, 0]}>
-            <sphereGeometry args={[0.06 - i * 0.006, 8, 8]} />
+            <sphereGeometry args={[0.06 - i * 0.006, 16, 16]} />
             <meshStandardMaterial
               color="#f97316" // Tailwind orange-500
               emissive="#f97316"
@@ -311,13 +312,8 @@ export default function StickySpacecraft() {
         end: "bottom bottom",
         onUpdate: (self) => {
           setScrollProgress(self.progress);
-
-          // Hide at bottom
-          if (self.progress > 0.95) {
-            setVisible(false);
-          } else {
-            setVisible(true);
-          }
+          // Keep visible throughout entire scroll including footer
+          setVisible(true);
         },
       });
     });
