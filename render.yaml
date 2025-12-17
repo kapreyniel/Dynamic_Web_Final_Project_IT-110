@@ -1,7 +1,11 @@
 services:
   - type: web
     name: beyond-earth
-    runtime: php
+    runtime: php-8.3
+    region: oregon
+    branch: main
+    plan: free
+
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       npm install
@@ -10,9 +14,22 @@ services:
       php artisan migrate --force
       php artisan storage:link
       php artisan optimize
+
     startCommand: php artisan serve --host 0.0.0.0 --port $PORT
+
+    healthCheckPath: /
+    autoDeploy: true
+
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
