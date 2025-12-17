@@ -1,10 +1,10 @@
 services:
   - type: web
     name: beyond-earth
-    runtime: php-8.3
+    runtime: php # ✅ Just "php"
+    plan: free
     region: oregon
     branch: main
-    plan: free
 
     buildCommand: |
       composer install --no-dev --optimize-autoloader
@@ -27,9 +27,3 @@ services:
         value: false
       - key: LOG_CHANNEL
         value: stderr
-      - key: SESSION_DRIVER
-        value: database
-      - key: CACHE_DRIVER
-        value: file
-      - key: QUEUE_CONNECTION
-        value: sync
